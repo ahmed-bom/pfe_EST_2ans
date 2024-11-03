@@ -2,129 +2,86 @@
 
 const cv = document.getElementById("canvas");
 const ctx = cv.getContext("2d");
-cv.width = window.innerWidth;
-cv.height = window.innerHeight - 4;
-
+cv.width = 580;
+cv.height = 580;
+// const
+const control = document.getElementById("control");
+const solve_div = document.getElementById("solve");
+const generate = document.getElementById("generate");
 // VAR =====
+let map = create2DArray(10)
+let map_size = map.length;
+let scale = cv.width / map_size;
+let mouse_x = 0;
+let mouse_y = 0;
 
-const pi2 = Math.PI * 2;
-let map_size = 10;
-let collision = 1;
-let go = 0;
-let solve = false;
-let map = new MINI_MAP();
-let p = new PLAYER();
+// let map = new MINI_MAP();
 
-// FPC =====
-
-let siecle = 0;
-const FPC = 20;
-const cycle_delay = Math.floor(1000 / FPC);
-
-// ================================
-// ================================
-
-// GET SOLVE
-
-function get_solve(array) {
-  fetch("http://localhost:8080/solve/DBF", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      maze: array,
-      start: {
-        x: p.y,
-        y: p.x,
-      },
-    }),
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      return response.json();
-    })
-    .then((data) => {
-      animate_path(data.all_path , data.solution);
-      solve = data.solution
-    })
-    .catch((error) => {
-      console.error("Fetch error:", error);
-    });
-}
-
-// DRAW PATH
-
-function draw_path(solution) {
-  for (let i = 0; i < solution.length; i++) {
-    path = solution[i];
-    let x = path[0];
-    let y = path[1];
-    map.array[x][y] = 2;
+cv.addEventListener("mousedown", (info) => {
+  let x = Math.floor((info.x - 20) / scale);
+  let y = Math.floor((info.y - 20) / scale);
+  if (map[x][y] == 1 || map[x][y] == 0) {
+    map[x][y] = 1 - map[x][y];
   }
-
-}
-
-// ANIMATE PATH
-
-function animate_path(solution,path,i=0) {
-  if (i == solution.length) {
-    draw_path(solve)
-    return 0
-  }
-    path = solution[i];
-    let x = path[0];
-    let y = path[1];
-    map.array[x][y] = 3;
-    i++
-  setTimeout(() => {
-    animate_path(solution, path , i);
-  }, cycle_delay);
-}
-
-// ================================
-// ================================
-
-
-
-
-
-// KEY DOWN
+  draw();
+});
 
 document.onkeydown = function KEY_DOWN(event) {
   switch (event.code) {
-    case "Space":
-      go = 1;
-      console.log(p.x + "," + p.y);
+    case "KeyG":
       break;
     case "KeyS":
-      get_solve(map.array);
+      // get_solve(map.array);
       break;
-    case "ArrowRight":
-      p.rotate_dir = -pi2;
-      break;
-    case "ArrowLeft":
-      p.rotate_dir = pi2;
+    case "KeyD":
+
       break;
   }
 };
 
-// KEY UP
-
-document.onkeyup = function (event) {
-  switch (event.code) {
-    case "Space":
-      go = 0;
-      break;
-    case "ArrowRight":
-      p.rotate_dir = 0;
-      break;
-    case "ArrowLeft":
-      p.rotate_dir = 0;
-      break;
+function create2DArray(dim) {
+  const array2D = [];
+  for (let i = 0; i < dim; i++) {
+    array2D.push(new Array(dim).fill(0));
   }
-};
+  array2D[0][0] = 4;
+  array2D[dim-1][dim-1] = 2;
+  return array2D;
+}
 
-START();
+function draw() {
+  // refresh screen
+  ctx.fillStyle = "#1E3E62";
+  ctx.fillRect(0, 0, cv.width, cv.height);
+  // =========
+  for (let i = 0; i < map.length; i++) {
+    for (let j = 0; j < map[i].length; j++) {
+      switch (map[i][j]) {
+        case 0:
+          ctx.fillStyle = "white";
+          ctx.fillRect(i * scale, j * scale, scale-1, scale-1);
+          break;
+        case 1:
+          ctx.fillStyle = "black";
+          ctx.fillRect(i * scale, j * scale, scale-1, scale-1);
+          break;
+        case 2:
+          ctx.fillStyle = "red";
+          ctx.fillRect(i * scale, j * scale, scale-1, scale-1);
+          break;
+        case 3:
+          ctx.fillStyle = "blue";
+          ctx.fillRect(i * scale, j * scale, scale-1, scale-1);
+          break;
+        case 4:
+          ctx.fillStyle = "green";
+          ctx.fillRect(i * scale, j * scale, scale-1, scale-1);
+          break;
+      }
+    }
+  }
+}
+
+
+
+draw()

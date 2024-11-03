@@ -1,4 +1,5 @@
 // MINI MAP ==
+//TODO change this.scale and this.size to var
 class MINI_MAP {
   constructor() {}
 
