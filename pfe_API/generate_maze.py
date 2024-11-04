@@ -30,5 +30,6 @@ class maze_generate():
             else:
                 stack.pop()
         # END
+        maze[1,1] = 4
         maze[-2, -2] = 2
         return maze

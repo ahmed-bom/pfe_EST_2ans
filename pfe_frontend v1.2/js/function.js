@@ -1,6 +1,5 @@
 // START ====
-
-function START() {
+function START(map,p) {
   fetch("http://127.0.0.1:8080/generate/DBF/" + map_size)
     .then((response) => {
       if (!response.ok) {
@@ -9,9 +8,10 @@ function START() {
       return response.json();
     })
     .then((data) => {
-      map.new_map(map_size, 30, data.maze);
-      p.new_player(1, 1, Math.PI / 2);
-      render_mini_map();
+      map.array = data.maze;
+      map.update()
+      p.update(map)
+      render_mini_map(map, p);
     })
     .catch((error) => {
       console.error("Fetch error:", error);
@@ -20,33 +20,28 @@ function START() {
 
 // ================================
 // ================================
-
-
 // MINI MAP
-function render_mini_map() {
+function render_mini_map(map, p) {
   // collision
-    collision_detection();
+  collision_detection(map, p);
   // MOV MINI MAP
-    mov_mini_map()
-  // =========
-  // CHANGE MAZE 
-
+  mov_mini_map(map, p);
+  // DROIT  
   if (siecle == 2) {
     // refresh screen
     ctx.fillStyle = "#1E3E62";
     ctx.fillRect(0, 0, cv.width, cv.height);
     // =========
-    map.droit();
+    map.droit_min_map(p);
     p.droit();
     p.mov();
     siecle = 0;
   }
   siecle++;
-  setTimeout(render_mini_map, cycle_delay);
+  setTimeout(()=>{render_mini_map(map,p)}, cycle_delay);
 }
 
-
-function collision_detection() {
+function collision_detection(map, p) {
   if (
     map.array[p.y + Math.round(Math.cos(p.angle))][
       p.x + Math.round(Math.sin(p.angle))
@@ -64,18 +59,18 @@ function collision_detection() {
   }
 }
 
-function mov_mini_map(){
-    if (
-      (p.new_x / map.scale == map.visible_part - 2 &&
-        Math.round(Math.sin(p.angle)) > 0) ||
-      (p.new_x / map.scale == 1 && Math.round(Math.sin(p.angle)) < 0) ||
-      (p.new_y / map.scale == map.visible_part - 2 &&
-        Math.round(Math.cos(p.angle)) > 0) ||
-      (p.new_y / map.scale == 1 && Math.round(Math.cos(p.angle)) < 0)
-    ) {
-      map.dir_i = collision * go;
-      map.dir_j = collision * go;
-    }
+function mov_mini_map(map, p) {
+  if (
+    (p.new_x / map.scale == map.visible_part - 2 &&
+      Math.round(Math.sin(p.angle)) > 0) ||
+    (p.new_x / map.scale == 1 && Math.round(Math.sin(p.angle)) < 0) ||
+    (p.new_y / map.scale == map.visible_part - 2 &&
+      Math.round(Math.cos(p.angle)) > 0) ||
+    (p.new_y / map.scale == 1 && Math.round(Math.cos(p.angle)) < 0)
+  ) {
+    map.dir_i = collision * go;
+    map.dir_j = collision * go;
+  }
 }
 
 // ================================
@@ -83,7 +78,7 @@ function mov_mini_map(){
 
 // GET SOLVE
 
-function get_solve(array) {
+function get_solve(array, start_x, start_y) {
   fetch("http://localhost:8080/solve/DBF", {
     method: "POST",
     headers: {
@@ -92,8 +87,8 @@ function get_solve(array) {
     body: JSON.stringify({
       maze: array,
       start: {
-        x: p.y,
-        y: p.x,
+        x: start_x,
+        y: start_y,
       },
     }),
   })
@@ -104,8 +99,7 @@ function get_solve(array) {
       return response.json();
     })
     .then((data) => {
-      animate_path(data.all_path , data.solution);
-      solve = data.solution
+      animate_path(array,data.all_path, data.solution);
     })
     .catch((error) => {
       console.error("Fetch error:", error);
@@ -114,32 +108,42 @@ function get_solve(array) {
 
 // DRAW PATH
 
-function draw_path(solution) {
+function draw_path(map,solution) {
   for (let i = 0; i < solution.length; i++) {
     path = solution[i];
     let x = path[0];
     let y = path[1];
-    map.array[x][y] = 2;
+    map[x][y] = 2;
   }
-
 }
 
 // ANIMATE PATH
 
-function animate_path(solution,path,i=0) {
-  if (i == solution.length) {
-    draw_path(solve)
-    return 0
+function animate_path(map,solution_path, solution, i = 0) {
+  if (i == solution_path.length) {
+    draw_path(map,solution);
+    return 0;
   }
-    path = solution[i];
-    let x = path[0];
-    let y = path[1];
-    map.array[x][y] = 3;
-    i++
+  path = solution_path[i];
+  let x = path[0];
+  let y = path[1];
+  map[x][y] = 3;
+  i++;
   setTimeout(() => {
-    animate_path(solution, path , i);
+    animate_path(map,solution_path, solution, i);
   }, cycle_delay);
 }
 
 // ================================
 // ================================
+
+function create2DArray(dim) {
+  const array2D = [];
+  for (let i = 0; i < dim; i++) {
+    array2D.push(new Array(dim).fill(0));
+  }
+  array2D[0][0] = 4;
+  array2D[dim - 1][dim - 1] = 2;
+  return array2D;
+}
+
