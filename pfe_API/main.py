@@ -33,7 +33,7 @@ class mazeModel(BaseModel):
 @app.get("/generate/{algorithme}/{dim}")
 def read_root(algorithme: str,dim:int):
     if algorithme == "DBF":
-        maze =gen.DBF(dim)
+        maze =gen.DBF((dim-1)/2)
         return {"maze":maze.tolist()}
     return{"error":"algo not find"}
 

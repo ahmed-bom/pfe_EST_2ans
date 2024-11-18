@@ -1,6 +1,6 @@
 // START ====
-function START(map,p) {
-  fetch("http://127.0.0.1:8080/generate/DBF/" + map_size)
+function START(map,player) {
+  fetch("http://127.0.0.1:8080/generate/DBF/" + map_size)//todo map size
     .then((response) => {
       if (!response.ok) {
         throw new Error("Network response was not ok");
@@ -10,8 +10,8 @@ function START(map,p) {
     .then((data) => {
       map.array = data.maze;
       map.update()
-      p.update(map)
-      render_mini_map(map, p);
+      player.update(map)
+      // render_mini_map(map, player);
     })
     .catch((error) => {
       console.error("Fetch error:", error);

@@ -26,7 +26,7 @@ class maze_solving():
                     break
             else:
                 stack.pop()
-        return all_path , "solution not find"
+        return all_path , []
             # all_path // stack == solution
 
 
