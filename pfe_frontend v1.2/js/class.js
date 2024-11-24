@@ -3,7 +3,7 @@ class MAP {
     this.array = map;
     this.size = map.length;
     this.scale = scale;
-    this.vp = 5;
+    this.vp = 10;
 
     if (this.size >= this.vp) {
       this.visible_part = this.vp;
@@ -120,7 +120,6 @@ class PLAYER {
     this.x = x;
     this.y = y;
     this.angle = angle;
-    //  map_object.scale/2 for min map
     this.map_scale = map_object.scale;
     this.map_size = map_object.size;
     this.map_visible_part = map_object.visible_part;
@@ -129,6 +128,9 @@ class PLAYER {
     this.dir_y = 0;
     this.rotate_dir = 0;
     this.rotate_spied = 0.1;
+
+    this.screen_x = this.x;
+    this.screen_y = this.y;
   }
 
   update(map_object) {
@@ -165,8 +167,8 @@ class PLAYER {
     let mov_x = Math.round(Math.sin(this.angle) * this.dir_x);
     let mov_y = Math.round(Math.cos(this.angle) * this.dir_y);
 
-    let x_scale = this.x * this.map_scale;
-    let y_scale = this.y * this.map_scale;
+    let x_scale = this.screen_x * this.map_scale;
+    let y_scale = this.screen_y * this.map_scale;
     let visible_part_scale = this.map_visible_part * this.map_scale;
 
     // 2 and (this.map_size - 1) => (stare + 1) and (end - 1) of min map
@@ -174,49 +176,42 @@ class PLAYER {
     // same just change (map size) bay (map visible part) and multiply ale by map scale
     if (
       (mov_x < 0 && x_scale > this.map_scale) ||
-      (mov_x > 0 && x_scale < visible_part_scale - 2 * this.map_scale)
+      (mov_x > 0 && x_scale < visible_part_scale - (2 * this.map_scale))
     ) {
-      x_scale += this.map_scale * mov_x;
+      this.screen_x += mov_x;
     }
     if (
       (mov_y < 0 && y_scale > this.map_scale) ||
-      (mov_y > 0 && y_scale < visible_part_scale - 2 * this.map_scale)
+      (mov_y > 0 && y_scale < visible_part_scale - (2 * this.map_scale))
     ) {
-      y_scale += this.map_scale * mov_y;
+      this.screen_y += mov_y;
     }
     // ============================
 
-    // draw Arrow
-    const arrowLength = this.map_scale * 4/6;
-    let arrowAngel =   Math.PI/2;
-    let x = x_scale + this.map_scale / 6;
-    let y = y_scale + this.map_scale / 2;
-
-    ctx.fillStyle = "red";
+    //Draw a Circle
+    ctx.fillStyle = "Red";
     ctx.beginPath();
-    ctx.moveTo(x, y);
-
-    ctx.lineTo(
-      x + (arrowLength / 3) * Math.sin(this.angle + arrowAngel),
-      y + (arrowLength / 3) * Math.cos(this.angle + arrowAngel)
+    ctx.arc(
+      x_scale + this.map_scale / 2,
+      y_scale + this.map_scale / 2,
+      this.map_scale / 3,
+      0,
+      2 * Math.PI
     );
-
-    ctx.lineTo(
-      x + arrowLength * Math.sin(this.angle),
-      y + arrowLength * Math.cos(this.angle)
-    );
-
-    ctx.lineTo(
-      x + (arrowLength / 3) * Math.sin(this.angle - arrowAngel),
-      y + (arrowLength / 3) * Math.cos(this.angle - arrowAngel)
-    );
-
-    ctx.lineTo(x, y);
     ctx.fill();
-
-      ctx.lineTo(x, y);
-      ctx.fill();
-      ctx.stroke();
+    // Draw a Line
+    ctx.beginPath();
+    ctx.moveTo(
+      x_scale + this.map_scale / 2,
+      y_scale + this.map_scale / 2
+    );
+    ctx.lineTo(
+      x_scale + this.map_scale / 2 + Math.sin(this.angle) * this.map_scale,
+      y_scale + this.map_scale / 2 + Math.cos(this.angle) * this.map_scale
+    );
+    ctx.lineWidth = this.map_scale / 10;
+    ctx.strokeStyle = "Red";
+    ctx.stroke();
   
   }
 }

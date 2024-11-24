@@ -33,7 +33,7 @@ cv.addEventListener("mousedown", (info) => {
   if (mod == "main") {
     let x = Math.floor(info.x / scale);
     let y = Math.floor(info.y / scale);
-    if (x < map_size && y < map_size) {
+    if (x < map_size-1 && y <= map_size-1 && x > 0 && y > 0) {
       if (map.array[x][y] == 1 || map.array[x][y] == 0) {
         // switch 1 and 0
         map.array[y][x] = 1 - map.array[y][x];

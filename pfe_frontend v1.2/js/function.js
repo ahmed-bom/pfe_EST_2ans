@@ -64,6 +64,7 @@ function droit_mini_map(map, p) {
 }
 
 function collision_detection(map, p) {
+  // go and collision global variable  I do not know how to fix this because of recursion
   if (
     map.array[p.y + Math.round(Math.cos(p.angle))][
       p.x + Math.round(Math.sin(p.angle))
@@ -82,6 +83,8 @@ function collision_detection(map, p) {
 }
 
 function mov_mini_map(map, p) {
+  // go and collision global variable  I do not know how to fix this because of recursion
+  // I think I must use pointers
   if (
     (p.new_x / map.scale == map.visible_part - 2 &&
       Math.round(Math.sin(p.angle)) > 0) ||
@@ -132,8 +135,16 @@ function create2DArray(dim) {
   for (let i = 0; i < dim; i++) {
     array2D.push(new Array(dim).fill(0));
   }
-  array2D[0][0] = 4;
-  array2D[dim - 1][dim - 1] = 2;
+  for (let i = 0; i < dim; i++) {
+    array2D[i][0] = 1;
+    array2D[i][dim - 1] = 1;
+  }
+  for (let i = 0; i < dim; i++) {
+    array2D[0][i] = 1;
+    array2D[dim - 1][i] = 1;
+  }
+  array2D[1][1] = 4;
+  array2D[dim - 2][dim - 2] = 2;
   return array2D;
 }
 
@@ -159,9 +170,8 @@ function main_loop(map, player, cycle_delay = 100) {
   } else if (mod == "player") {
     droit_mini_map(map, player);
   }
-  setTimeout(() => {
-    main_loop(map, player, cycle_delay);
-  }, cycle_delay);
+
+  setTimeout(() => { main_loop(map, player, cycle_delay);}, cycle_delay);
 }
 
 
