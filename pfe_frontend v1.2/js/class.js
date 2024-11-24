@@ -3,7 +3,7 @@ class MAP {
     this.array = map;
     this.size = map.length;
     this.scale = scale;
-    this.vp = 10;
+    this.vp = 5;
 
     if (this.size >= this.vp) {
       this.visible_part = this.vp;
@@ -25,17 +25,17 @@ class MAP {
     }
   }
 
-  droit_square(x, y, color, d = 0) {
+  droit_square(x, y, color, d = 1) {
+    // d = 1 for scaling square 
     ctx.fillStyle = color;
     ctx.fillRect(
-      x * this.scale,
-      y * this.scale,
-      this.scale - d,
-      this.scale - d
+      x * this.scale*d,
+      y * this.scale*d,
+      this.scale * d,
+      this.scale * d
     );
   }
 
-  //  :)
   mini_map(p) {
     if ((this.visible_part = this.vp)) {
       this.droit_min_map(p);
@@ -92,16 +92,16 @@ class MAP {
       for (let j = 0; j < this.size; j++) {
         switch (this.array[j][i]) {
           case 0:
-            this.droit_square(i, j, "white", 1);
+            this.droit_square(i, j, "white");
             break;
           case 1:
             this.droit_square(i, j, "black");
             break;
           case 2:
-            this.droit_square(i, j, "red", 1);
+            this.droit_square(i, j, "red");
             break;
           case 3:
-            this.droit_square(i, j, "blue", 1);
+            this.droit_square(i, j, "blue");
             break;
           case 4:
             this.droit_square(i, j, "green");
@@ -120,7 +120,7 @@ class PLAYER {
     this.x = x;
     this.y = y;
     this.angle = angle;
-
+    //  map_object.scale/2 for min map
     this.map_scale = map_object.scale;
     this.map_size = map_object.size;
     this.map_visible_part = map_object.visible_part;
@@ -186,19 +186,19 @@ class PLAYER {
     }
     // ============================
 
-    // // draw Arrow
-    const arrowLength = this.map_scale / 2;
-    let arrowAngel = (5 / 6) * Math.PI;
-    let x = x_scale + this.scale / 2;
-    let y = y_scale + this.scale / 2;
+    // draw Arrow
+    const arrowLength = this.map_scale * 4/6;
+    let arrowAngel =   Math.PI/2;
+    let x = x_scale + this.map_scale / 6;
+    let y = y_scale + this.map_scale / 2;
 
     ctx.fillStyle = "red";
     ctx.beginPath();
     ctx.moveTo(x, y);
 
     ctx.lineTo(
-      x + (arrowLength / 2) * Math.sin(this.angle + arrowAngel),
-      y + (arrowLength / 2) * Math.cos(this.angle + arrowAngel)
+      x + (arrowLength / 3) * Math.sin(this.angle + arrowAngel),
+      y + (arrowLength / 3) * Math.cos(this.angle + arrowAngel)
     );
 
     ctx.lineTo(
@@ -207,11 +207,16 @@ class PLAYER {
     );
 
     ctx.lineTo(
-      x + (arrowLength / 2) * Math.sin(this.angle - arrowAngel),
-      y + (arrowLength / 2) * Math.cos(this.angle - arrowAngel)
+      x + (arrowLength / 3) * Math.sin(this.angle - arrowAngel),
+      y + (arrowLength / 3) * Math.cos(this.angle - arrowAngel)
     );
 
     ctx.lineTo(x, y);
     ctx.fill();
+
+      ctx.lineTo(x, y);
+      ctx.fill();
+      ctx.stroke();
+  
   }
 }

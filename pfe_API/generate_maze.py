@@ -3,7 +3,7 @@ import random
 class maze_generate():
     def __init__(self) -> None:
         pass
-    def DBF(self,dim:float):
+    def DFS(self,dim):
         # Create a grid filled with walls
         maze = np.ones((dim*2+1, dim*2+1),dtype=int)
 

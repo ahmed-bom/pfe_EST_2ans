@@ -2,31 +2,38 @@ import random
 class maze_solving():
     def __init__(self) -> None:
         pass
-    def DBF(self,maze,start):
-        all_path=[]
-        visited=set()
+    def DFS(self, maze, start):
+
+        steps_to_get_solution = []
+        visited = set()
         directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
-        dim = len( maze )
-        # Initialize the stack with the starting point
+        dim = len(maze)
         stack = [start]
-        while len(stack) > 0:
+
+        while stack:
             x, y = stack[-1]
-            if (x,y) not in visited :
-                all_path.append((x,y))
-            visited.add((x,y))
-            if maze[x][y]== 2:
-                return (all_path,stack)
+
+            if (x, y) not in visited:
+                steps_to_get_solution.append((x, y))
+
+            visited.add((x, y))
+            if maze[x][y] == 2:
+                return steps_to_get_solution, stack
             
-            # shuffle possible directions
             random.shuffle(directions)
             for dx, dy in directions:
                 nx, ny = x + dx, y + dy
-                if nx >= 0 and ny >= 0 and nx < dim and ny < dim and maze[nx][ny] != 1 and (nx,ny) not in visited:
+                if (0 <= nx < dim and 0 <= ny < dim and
+                        maze[nx][ny] != 1 and (nx, ny) not in visited):
                     stack.append((nx, ny))
                     break
             else:
                 stack.pop()
-        return all_path , []
-            # all_path // stack == solution
+                
+        return steps_to_get_solution, []
+
+    def A_star(self, maze, start):
+        pass
+                                       
 
 

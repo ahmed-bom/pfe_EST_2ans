@@ -32,17 +32,18 @@ class mazeModel(BaseModel):
 
 @app.get("/generate/{algorithme}/{dim}")
 def read_root(algorithme: str,dim:int):
-    if algorithme == "DBF":
-        maze =gen.DBF((dim-1)/2)
+    if algorithme == "DFS":
+        # new_dim=(dim-1)/2
+        maze =gen.DFS(dim)
         return {"maze":maze.tolist()}
     return{"error":"algo not find"}
 
 
 @app.post("/solve/{algorithme}")
 def read_root(algorithme: str,maze:mazeModel):
-    if algorithme == "DBF":
-        all_path , solution=sol.DBF(maze.maze,(maze.start.x,maze.start.y))
-        return {"solution":solution,"all_path":all_path}
+    if algorithme == "DFS":
+        steps_to_solution , solution=sol.DFS(maze.maze,(maze.start.x,maze.start.y))
+        return {"solution":solution,"steps_to_solution":steps_to_solution}
     return{"error":"algo not find"}
 
 
