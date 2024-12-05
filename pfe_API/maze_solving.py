@@ -17,7 +17,7 @@ class maze_solving():
                 steps_to_get_solution.append((x, y))
 
             visited.add((x, y))
-            if maze[x][y] == 2:
+            if maze[x][y] == 5:
                 return steps_to_get_solution, stack
             
             random.shuffle(directions)

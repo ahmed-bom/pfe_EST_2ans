@@ -53,10 +53,10 @@ document.onkeydown = function KEY_DOWN(event) {
         game.go = 1;
         break;
       case "ArrowRight":
-        player.rotate_dir = -pi2;
+        player.rotation = -pi2;
         break;
       case "ArrowLeft":
-        player.rotate_dir = pi2;
+        player.rotation = pi2;
         break;
     }
   }
@@ -72,10 +72,10 @@ document.onkeyup = function (event) {
         game.go = 0;
         break;
       case "ArrowRight":
-        player.rotate_dir = 0;
+        player.rotation = 0;
         break;
       case "ArrowLeft":
-        player.rotate_dir = 0;
+        player.rotation = 0;
         break;
     }
   }

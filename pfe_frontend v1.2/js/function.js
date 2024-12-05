@@ -1,6 +1,6 @@
 // GET RANDOM MAP ====
 function get_map(game) {
-  fetch("http://127.0.0.1:8080/generate/DFS/" + game.map_size)
+  fetch("http://127.0.0.1:8080/generate/DFS/" + (game.map_size - 1) / 2)
     .then((response) => {
       if (!response.ok) {
         throw new Error("Network response was not ok");
@@ -11,8 +11,6 @@ function get_map(game) {
       game.map.array = data.maze;
       game.start_x = 1;
       game.start_y = 1;
-      game.map.update();
-      game.player.update(game.map, game.start_x, game.start_y);
     })
     .catch((error) => {
       console.error("Fetch error:", error);
@@ -42,6 +40,7 @@ function get_solve(game, animate = false) {
       return response.json();
     })
     .then((data) => {
+      delate_from_2DArray(game.map, 2);
       if (animate) {
         animate_path(
           game.map,
@@ -60,41 +59,16 @@ function get_solve(game, animate = false) {
 
 // ================================
 
-// MINI MAP
-function game_loop(game) {
-  collision_detection(game);
-  if (game.collision * game.go == 1) {
-    game.player.mov()
-  }
-  game.player.angle += game.player.rotate_spied * game.player.rotate_dir;
-  game.map.droit_min_map();
-  game.player.droit();
-}
-
-function collision_detection(game) {
-  let p = game.player;
-  let map = game.map;
-  let x = p.x + Math.round(Math.sin(p.angle));
-  let y = p.y + Math.round(Math.cos(p.angle));
-
-  if (map.array[y][x] == 1) {
-    game.collision = 0;
-  } else {
-    game.collision = 1;
-  }
-}
-
-// ================================
-
 // DRAW PATH
 
 function draw_path(map, solution) {
-  for (let i = 0; i < solution.length; i++) {
+  for (let i = 1; i < solution.length - 1; i++) {
     path = solution[i];
     let x = path[0];
     let y = path[1];
     map.array[x][y] = 2;
   }
+  delate_from_2DArray(map, 3);
 }
 
 // ANIMATE PATH
@@ -104,9 +78,9 @@ function animate_path(
   steps_to_solution,
   solution,
   cycle_delay = 100,
-  i = 0
+  i = 1
 ) {
-  if (i == steps_to_solution.length) {
+  if (i == steps_to_solution.length - 1) {
     draw_path(map, solution);
     return 0;
   }
@@ -140,6 +114,17 @@ function create2DArray(dim) {
   return array2D;
 }
 
+function delate_from_2DArray(map, v) {
+  let l = map.array.length;
+
+  for (let i = 0; i < l; i++) {
+    for (let j = 0; j < l; j++) {
+      if (map.array[i][j] == v) {
+        map.array[i][j] = 0;
+      }
+    }
+  }
+}
 // ================================
 
 function switch_mode(game) {
@@ -158,11 +143,10 @@ function main_loop(game) {
   if (game.mod == "main") {
     game.map.droit();
   } else if (game.mod == "player") {
-    game_loop(game);
+    game.game_loop();
   }
 
   setTimeout(() => {
     main_loop(game);
   }, game.cycle_delay);
 }
-

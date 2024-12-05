@@ -31,5 +31,5 @@ class maze_generate():
                 stack.pop()
         # END
         maze[1,1] = 4
-        maze[-2, -2] = 2
+        maze[-2, -2] = 5
         return maze
