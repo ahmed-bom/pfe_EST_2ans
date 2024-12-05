@@ -1,6 +1,6 @@
 // GET RANDOM MAP ====
-function get_map(map, player, map_size, start_i, start_j) {
-  fetch("http://127.0.0.1:8080/generate/DFS/" + map_size)
+function get_map(game) {
+  fetch("http://127.0.0.1:8080/generate/DFS/" + game.map_size)
     .then((response) => {
       if (!response.ok) {
         throw new Error("Network response was not ok");
@@ -8,9 +8,11 @@ function get_map(map, player, map_size, start_i, start_j) {
       return response.json();
     })
     .then((data) => {
-      map.array = data.maze;
-      map.update();
-      player.update(map);
+      game.map.array = data.maze;
+      game.start_x = 1;
+      game.start_y = 1;
+      game.map.update();
+      game.player.update(game.map, game.start_x, game.start_y);
     })
     .catch((error) => {
       console.error("Fetch error:", error);
@@ -19,17 +21,17 @@ function get_map(map, player, map_size, start_i, start_j) {
 
 // GET SOLVE
 
-function get_solve(array, start_x, start_y,animate =false,cycle_delay = 100) {
+function get_solve(game, animate = false) {
   fetch("http://localhost:8080/solve/DFS", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      maze: array,
+      maze: game.map.array,
       start: {
-        x: start_x,
-        y: start_y,
+        x: game.start_x,
+        y: game.start_y,
       },
     }),
   })
@@ -40,11 +42,15 @@ function get_solve(array, start_x, start_y,animate =false,cycle_delay = 100) {
       return response.json();
     })
     .then((data) => {
-      if (animate){
-        animate_path(array, data.all_path, data.solution, cycle_delay);
-      }
-      else{
-        draw_path(array, data.solution);
+      if (animate) {
+        animate_path(
+          game.map,
+          data.steps_to_solution,
+          data.solution,
+          game.cycle_delay
+        );
+      } else {
+        draw_path(game.map, data.solution);
       }
     })
     .catch((error) => {
@@ -55,46 +61,26 @@ function get_solve(array, start_x, start_y,animate =false,cycle_delay = 100) {
 // ================================
 
 // MINI MAP
-function droit_mini_map(map, p) {
-  collision_detection(map, p);
-  mov_mini_map(map, p);
-  map.droit_min_map(p);
-  p.droit();
-  p.mov();
-}
-
-function collision_detection(map, p) {
-  // go and collision global variable  I do not know how to fix this because of recursion
-  if (
-    map.array[p.y + Math.round(Math.cos(p.angle))][
-      p.x + Math.round(Math.sin(p.angle))
-    ] == 1
-  ) {
-    collision = 0;
-    p.dir_x = collision;
-    p.dir_y = collision;
-    map.dir_i = collision;
-    map.dir_j = collision;
-  } else {
-    collision = 1;
-    p.dir_x = go;
-    p.dir_y = go;
+function game_loop(game) {
+  collision_detection(game);
+  if (game.collision * game.go == 1) {
+    game.player.mov()
   }
+  game.player.angle += game.player.rotate_spied * game.player.rotate_dir;
+  game.map.droit_min_map();
+  game.player.droit();
 }
 
-function mov_mini_map(map, p) {
-  // go and collision global variable  I do not know how to fix this because of recursion
-  // I think I must use pointers
-  if (
-    (p.new_x / map.scale == map.visible_part - 2 &&
-      Math.round(Math.sin(p.angle)) > 0) ||
-    (p.new_x / map.scale == 1 && Math.round(Math.sin(p.angle)) < 0) ||
-    (p.new_y / map.scale == map.visible_part - 2 &&
-      Math.round(Math.cos(p.angle)) > 0) ||
-    (p.new_y / map.scale == 1 && Math.round(Math.cos(p.angle)) < 0)
-  ) {
-    map.dir_i = collision * go;
-    map.dir_j = collision * go;
+function collision_detection(game) {
+  let p = game.player;
+  let map = game.map;
+  let x = p.x + Math.round(Math.sin(p.angle));
+  let y = p.y + Math.round(Math.cos(p.angle));
+
+  if (map.array[y][x] == 1) {
+    game.collision = 0;
+  } else {
+    game.collision = 1;
   }
 }
 
@@ -107,13 +93,19 @@ function draw_path(map, solution) {
     path = solution[i];
     let x = path[0];
     let y = path[1];
-    map[x][y] = 2;
+    map.array[x][y] = 2;
   }
 }
 
 // ANIMATE PATH
 
-function animate_path(map, steps_to_solution, solution, cycle_delay = 100, i = 0) {
+function animate_path(
+  map,
+  steps_to_solution,
+  solution,
+  cycle_delay = 100,
+  i = 0
+) {
   if (i == steps_to_solution.length) {
     draw_path(map, solution);
     return 0;
@@ -121,7 +113,7 @@ function animate_path(map, steps_to_solution, solution, cycle_delay = 100, i = 0
   path = steps_to_solution[i];
   let x = path[0];
   let y = path[1];
-  map[x][y] = 3;
+  map.array[x][y] = 3;
   i++;
   setTimeout(() => {
     animate_path(map, steps_to_solution, solution, cycle_delay, i);
@@ -144,34 +136,33 @@ function create2DArray(dim) {
     array2D[dim - 1][i] = 1;
   }
   array2D[1][1] = 4;
-  array2D[dim - 2][dim - 2] = 2;
+  array2D[dim - 2][dim - 2] = 5;
   return array2D;
 }
 
 // ================================
 
-function switch_mode(mod) {
-  if (mod == "main") {
-    mod = "player";
-  } else if (mod == "player") {
-    mod = "main";
+function switch_mode(game) {
+  if (game.mod == "main") {
+    game.mod = "player";
+  } else if (game.mod == "player") {
+    game.mod = "main";
   }
-  return mod;
 }
 
-function main_loop(map, player, cycle_delay = 100) {
-  // mod global variable == "main" or "player" i do not know how to fix this because of recursion
+function main_loop(game) {
   // refresh screen
-  ctx.fillStyle = "#1E3E62";
-  ctx.fillRect(0, 0, cv.width, cv.height);
+  game.ctx.fillStyle = "#1E3E62";
+  game.ctx.fillRect(0, 0, cv.width, cv.height);
   // =========
-  if (mod == "main") {
-    map.droit();
-  } else if (mod == "player") {
-    droit_mini_map(map, player);
+  if (game.mod == "main") {
+    game.map.droit();
+  } else if (game.mod == "player") {
+    game_loop(game);
   }
 
-  setTimeout(() => { main_loop(map, player, cycle_delay);}, cycle_delay);
+  setTimeout(() => {
+    main_loop(game);
+  }, game.cycle_delay);
 }
-
 
