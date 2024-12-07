@@ -1,5 +1,4 @@
 // CANVAS ==
-
 const cv = document.getElementById("canvas");
 const ctx = cv.getContext("2d");
 cv.width = window.innerWidth;
