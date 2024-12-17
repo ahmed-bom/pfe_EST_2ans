@@ -31,16 +31,25 @@ class mazeModel(BaseModel):
     start: coordinate
 
 @app.get("/generate/{algorithme}/{dim}")
-def read_root(algorithme: str,dim:int):
+def generate_maze(algorithme: str,dim:int):
     if algorithme == "DFS":
-        # new_dim=(dim-1)/2
-        maze =gen.DFS(dim)
+        if dim % 2 == 0 :
+            new_dim =  dim+1
+        else:
+            new_dim=dim
+            # dim == 2k + 1
+        maze =gen.DFS(new_dim)
         return {"maze":maze.tolist()}
     return{"error":"algo not find"}
 
+@app.get("/generate_from_img")
+def generate_maze_from_img():
+    maze = gen.from_img("test.jpg")
+    return {"maze":maze.tolist()}
+
 
 @app.post("/solve/{algorithme}")
-def read_root(algorithme: str,maze:mazeModel):
+def solve_maze(algorithme: str,maze:mazeModel):
     if algorithme == "DFS":
         steps_to_solution , solution=sol.DFS(maze.maze,(maze.start.x,maze.start.y))
         return {"solution":solution,"steps_to_solution":steps_to_solution}

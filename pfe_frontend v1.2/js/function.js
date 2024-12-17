@@ -1,6 +1,6 @@
 // GET RANDOM MAP ====
 function get_map(game) {
-  fetch("http://127.0.0.1:8080/generate/DFS/" + (game.map_size - 1) / 2)
+  fetch("http://127.0.0.1:8080/generate/DFS/" + game.map_size )
     .then((response) => {
       if (!response.ok) {
         throw new Error("Network response was not ok");
@@ -16,7 +16,24 @@ function get_map(game) {
       console.error("Fetch error:", error);
     });
 }
-
+ 
+function img_to_map(game,cv){
+  fetch("http://127.0.0.1:8080/generate_from_img" )
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      return response.json();
+    })
+    .then((data) => {
+      game.map.array = data.maze;
+      game.scale = cv.height / game.map_size;
+      game.map_size= data.maze.length
+    })
+    .catch((error) => {
+      console.error("Fetch error:", error);
+    });
+}
 // GET SOLVE
 
 function get_solve(game, animate = false) {

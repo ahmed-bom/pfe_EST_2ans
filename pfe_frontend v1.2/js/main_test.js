@@ -13,14 +13,42 @@ const player = game.player;
 // ================================
 
 // MOUSE =====
+let mousedown = false;
+let old_x = 0;
+let old_y = 0;
 cv.addEventListener("mousedown", (info) => {
   if (game.mod == "main") {
+    mousedown = true;
+    old_x = Math.floor(info.x / game.scale);
+    old_y = Math.floor(info.y / game.scale);
+    if (
+      old_x < game.map_size - 1 &&
+      old_y < game.map_size - 1 &&
+      old_x > 0 &&
+      old_y > 0
+    ) {
+      if (game.map.array[old_y][old_x] == 1 || game.map.array[old_y][old_x] == 0) {
+        // switch 1 and 0
+        game.map.array[old_y][old_x] = 1 - game.map.array[old_y][old_x];
+      }
+    }
+  }
+});
+cv.addEventListener("mouseup", () => {
+  mousedown = false;
+});
+cv.addEventListener("mousemove", (info) => {
+  if (game.mod == "main" && mousedown) {
     let x = Math.floor(info.x / game.scale);
     let y = Math.floor(info.y / game.scale);
-    if (x < game.map_size-1 && y <= game.map_size-1 && x > 0 && y > 0) {
-      if (game.map.array[x][y] == 1 || game.map.array[x][y] == 0) {
-        // switch 1 and 0
-        game.map.array[y][x] = 1 - game.map.array[y][x];
+    if (x < game.map_size - 1 && y < game.map_size - 1 && x > 0 && y > 0) {
+      if (game.map.array[y][x] == 1 || game.map.array[y][x] == 0) {
+        if (old_x != x || old_y != y) {
+          // switch 1 and 0
+          game.map.array[y][x] = 1 - game.map.array[y][x];
+          old_x = x;
+          old_y = y;
+        }
       }
     }
   }
@@ -31,8 +59,12 @@ cv.addEventListener("mousedown", (info) => {
 document.onkeydown = function KEY_DOWN(event) {
   // CONTROL ===
   switch (event.code) {
+    
     case "KeyG":
       get_map(game);
+      break;
+    case "KeyQ":
+      img_to_map(game,cv)
       break;
     case "KeyS":
       if (game.mod == "main") {

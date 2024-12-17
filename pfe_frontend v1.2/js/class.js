@@ -1,7 +1,7 @@
 class game_object {
   constructor(ctx, cv) {
     this.ctx = ctx;
-
+    // map size == 2k + 1 for DFS
     this.map_size = 21;
     this.scale = cv.height / this.map_size;
     this.mini_map_visible_part = 10;
