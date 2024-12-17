@@ -11,8 +11,8 @@ class game_object {
     this.rotation = 0;
     this.rotate_spied = Math.PI / 8;
 
-    this.FPC = 20;
-    this.cycle_delay = Math.floor(1000 / this.FPC);
+    this.FPS = 20;
+    this.cycle_delay = Math.floor(1000 / this.FPS);
 
     this.start_x = 1;
     this.start_y = 1;

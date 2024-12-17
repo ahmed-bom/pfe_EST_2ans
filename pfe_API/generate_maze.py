@@ -8,8 +8,8 @@ class maze_generate():
         # Create a grid filled with walls
         maze = np.ones((map_dim, map_dim),dtype=int)
         # Define the random starting point
-        sid_x =random.randint(1,int(map_dim/2))
-        sid_y =random.randint(1,int(map_dim/2))
+        sid_x =random.randint(1,int(map_dim/2))-1
+        sid_y =random.randint(1,int(map_dim/2))-1
         start_x=sid_x*2 + 1
         start_y=sid_y*2 + 1
         maze[start_x, start_y] = 0

@@ -45,8 +45,8 @@ function get_solve(game, animate = false) {
     body: JSON.stringify({
       maze: game.map.array,
       start: {
-        x: game.start_x,
-        y: game.start_y,
+        x: game.player.y,
+        y: game.player.x,
       },
     }),
   })

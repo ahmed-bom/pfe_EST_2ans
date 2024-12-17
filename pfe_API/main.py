@@ -42,10 +42,10 @@ def generate_maze(algorithme: str,dim:int):
         return {"maze":maze.tolist()}
     return{"error":"algo not find"}
 
-@app.get("/generate_from_img")
-def generate_maze_from_img():
-    maze = gen.from_img("test.jpg")
-    return {"maze":maze.tolist()}
+# @app.get("/generate_from_img")
+# def generate_maze_from_img():
+#     maze = gen.from_img("test.jpg")
+#     return {"maze":maze.tolist()}
 
 
 @app.post("/solve/{algorithme}")
