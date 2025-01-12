@@ -27,8 +27,8 @@ function img_to_map(game,cv){
     })
     .then((data) => {
       game.map.array = data.maze;
-      game.scale = cv.height / game.map_size;
       game.map_size= data.maze.length
+      game.smart_scaling()
     })
     .catch((error) => {
       console.error("Fetch error:", error);

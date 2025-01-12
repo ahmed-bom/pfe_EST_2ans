@@ -19,8 +19,8 @@ let old_y = 0;
 cv.addEventListener("mousedown", (info) => {
   if (game.mod == "main") {
     mousedown = true;
-    old_x = Math.floor(info.x / game.scale);
-    old_y = Math.floor(info.y / game.scale);
+    old_x = Math.floor((info.x - game.map_center_x) / game.map_scale);
+    old_y = Math.floor(info.y / game.map_scale);
     if (
       old_x < game.map_size - 1 &&
       old_y < game.map_size - 1 &&
@@ -39,8 +39,8 @@ cv.addEventListener("mouseup", () => {
 });
 cv.addEventListener("mousemove", (info) => {
   if (game.mod == "main" && mousedown) {
-    let x = Math.floor(info.x / game.scale);
-    let y = Math.floor(info.y / game.scale);
+    let x = Math.floor((info.x-game.map_center_x) / game.map_scale);
+    let y = Math.floor(info.y / game.map_scale);
     if (x < game.map_size - 1 && y < game.map_size - 1 && x > 0 && y > 0) {
       if (game.map.array[y][x] == 1 || game.map.array[y][x] == 0) {
         if (old_x != x || old_y != y) {
