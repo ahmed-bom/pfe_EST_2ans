@@ -8,138 +8,229 @@ import math
 class Player:
     def __init__(self,socket:WebSocket):
 
-        # self.name = name
         self.type = "NULL"
 
         self.socket = socket
 
-        self.x = random.randint(0,6)
-        self.y = random.randint(0,6)
+        self.x = 1
+        self.y = 1
         self.angle = 3.14/2
         
-        self.rotation_speed = 3.14/4
+        self.rotation_speed = 3.14/8
         self.mov_speed = 0.5
+
+
 
 class Game:
     def __init__(self):
 
         self.players: Dict[str, Player] = {}
-        self.players_number_limit = 2
-        
+
+        self.max_number_of_players = 3 
+        self.max_number_of_keys_to_win = 5
+        # self.players_ready_to_start = []
+
+        # self.start_game = False
         self.end_game = False
+        
         
         self.map = [[1,1,1,1,1,1,1],
                     [1,0,0,0,0,0,1],
                     [1,0,0,0,0,0,1],
+                    [1,0,1,0,1,0,1],
                     [1,0,0,0,0,0,1],
                     [1,0,0,0,0,0,1],
-                    [1,1,1,1,1,1,1]]
-        
-        
+                    [1,1,1,1,1,1,1]] 
+        self.map_dim = len(self.map[0])
 
         
+        
+    async def player_listener(self,player_name:str,data:str):
+        if data == "move":
+            print(player_name,"move")
+            self.move_player(player_name)
+            await self.get_players_position()
+
+        elif data == "rotation to right" or data == "rotation to left":
+            print(player_name,"rotation")
+            self.player_rotation(player_name,data)
+            await self.get_players_position()
+
+        elif data == "disconnect":
+            print(player_name,"disconnected")
+            await self.player_disconnect(player_name)
+        
+        else:
+
+            await self.player_privet_message(player_name,"invalid command")
+
+
+#     async def player_ready(self,name:str):
+
+#         if name in self.players_ready_to_start:
+#             return 0
+        
+#         self.players_ready_to_start.append(name)
+#         if len(self.players_ready_to_start) == self.max_number_of_players:
+#             #self.start_game = True
+#             await self.give_types_to_players()
+#             await self.start() 
+#         else:
+#             self.players_broadcast_message("server",f"{name} is ready")
+
+
     async def new_player(self,name:str,socket:WebSocket):
         
-        self.players_number_limit -= 1
+        self.max_number_of_players -= 1
 
         p = Player(socket)
         self.players[name] = p
 
         print(name,"connected successfully")
-        await self.players_broadcast_message(name,"connected successfully")
+        await self.go_to_lobe(name)
         
-        if self.players_number_limit == 0:
-            await self.give_types_to_players()
-            await self.start_round()
+
+    async def go_to_lobe(self,player_name:str):
+            
+        print(player_name,"entered lobe")
+        
+        response = {
+            "map": self.map,
+            "players_info": self.Players_to_json(),
+        }
+
+        player_info = self.player_to_json(player_name)
+
+        await self.player_privet_message(player_name,response,"connected_successfully")
+        await self.players_broadcast_message(player_name,player_info,"new_connected")
+        
+        if self.max_number_of_players == 0:
+            await self.start()
+
+
+    async def start(self):
+
+        print("start game")
+        # game start 
+        await self.give_types_to_players()
+
+        response = {
+            "map": self.map,
+            "players_info": self.Players_to_json(),
+            "number_of_keys_to_win": self.max_number_of_keys_to_win
+        }
+
+        await self.players_broadcast_message("server",response,"game_start")
+    
             
    
     async def give_types_to_players(self):
 
-        rand = random.randint(0,len(self.players)-1) 
         ps_keys = list(self.players.keys())
         # random player will be hunter
-        hunter_name = ps_keys[rand]
-        self.players[hunter_name].type = "hunter"
-        await self.player_privet_message(hunter_name,"you are the hunter")
+        hunter_name = random.choice(ps_keys)
         # adar players will be prey
         for p_name in self.players.keys():
+
             if p_name == hunter_name:
+                self.players[hunter_name].type = "hunter"
+                await self.player_privet_message(hunter_name,"you are the hunter")
                 continue
+
             self.players[p_name].type = "prey"
             await self.player_privet_message(p_name,"you are a prey")
 
-    async def start_round(self):
-            print("start round")
-            
-            response = {
-                "map": self.map,
-                "players_info": self.Players_to_json(),
-            }
-            await self.players_broadcast_message("server",response,"start_round")
-            # start new round
 
-            
+
+
+
     
-    async def get_players_position(self):
-        
-        ps = self.players_position()
+    async def get_players_position(self): 
+        ps = self.Players_to_json(position=True)
         await self.players_broadcast_message("server",ps,"players_position")
 
         
 
-    def Players_to_json(self):
+    def Players_to_json(self,position:bool=False):
 
         players = []
         for p_name in self.players.keys():
-            player = self.player_to_json(p_name)
+            player = self.player_to_json(p_name,position)
             players.append(player)
 
         return players
 
-    def  players_position(self):
 
-        players = []
-        for p_name in self.players.keys():
-            player = self.player_position(p_name)
-            players.append(player)
+    
 
-        return players
 
-    def player_to_json(self,player_name : str):
+    def player_to_json(self,player_name : str , position:bool=False):
         
         player = self.players[player_name]
-
-        p = {
+        if position == True:
+            p = {
+            "x": player.x,
+            "y": player.y,
+            "angle": player.angle
+            }
+        else:
+            p = {
             "name": player_name,
             "type": player.type,
             "x": player.x,
             "y": player.y,
             "angle": player.angle,
-            "rotation_speed": player.rotation_speed,
-            "mov_speed": player.mov_speed,
-        }
+            }
 
         return p
     
-    def player_position(self,player_name:str):
+#     def player_position(self,player_name:str):
 
-        player = self.players[player_name]
-
-        p = {
-            "x": player.x,
-            "y": player.y,
-            "angle": player.angle
-            }
+#         player = self.players[player_name]
+#         p = {
+#             "x": player.x,
+#             "y": player.y,
+#             "angle": player.angle
+#             }
         
-        return p
+#         return p
 
-    def player_move(self,player_name:str):
+    def move_player(self,player_name:str):
 
         player = self.players[player_name]
+        x = player.x
+        y = player.y
         angle = player.angle
 
-        player.x += math.sin(angle)*player.mov_speed
-        player.y += math.cos(angle)*player.mov_speed
+        vx = math.sin(angle)*player.mov_speed
+        vy = math.cos(angle)*player.mov_speed
+
+        nex_x = x + vx
+        nex_y = y + vy
+
+        nex_j = int(nex_x)
+        nex_i = int(nex_y)
+
+        map = self.map
+
+        if map[nex_i][nex_j] == 1:
+            return
+            # while map[nex_i][nex_j] == 1 and vx > 0.01 and vy > 0.01:
+            #     vx /= 2
+            #     vy /= 2
+            #     nex_x -= vx
+            #     nex_y -= vy
+            #     nex_j = int(nex_x)
+            #     nex_i = int(nex_y)
+
+
+
+
+        player.x = nex_x
+        player.y = nex_y
+
+
+
 
     def player_rotation(self,player_name:str,rotation_type:str):
 
@@ -147,23 +238,24 @@ class Game:
 
         if rotation_type == "rotation to right":
             player.angle -= player.rotation_speed
+
         elif rotation_type == "rotation to left":
             player.angle += player.rotation_speed
 
-    async def player_disconnect(self,player_name:str,message:str="disconnected"):
 
-        await self.players_broadcast_message(player_name,message)
-        await  self.players[player_name].socket.close()
-        self.players.pop(player_name)
+
+
         
     async def player_privet_message(self,target_name:str,content,type: str="message"):
+
         response = {
             "type": type,
             "from": 'server',
             "content" : content,
         }
-        # TODO: check if player if it works
+
         await self.players[target_name].socket.send_json(response)
+
 
     async def players_broadcast_message(self,from_name:str,content,type: str="message"):
     
@@ -172,9 +264,21 @@ class Game:
             "from": from_name,
             "content" : content,
         }
-        for  p in self.players.values():
+
+        for  p_name in self.players.keys():
+
+            p = self.players[p_name]
+            if p_name == from_name or p_name == "server":
+                continue
+
             await p.socket.send_json(response)
 
+
+    async def player_disconnect(self,player_name:str,message:str="disconnected"):
+
+        await self.players_broadcast_message(player_name,message,"disconnected")
+        await  self.players[player_name].socket.close()
+        self.players.pop(player_name)
         
     
 

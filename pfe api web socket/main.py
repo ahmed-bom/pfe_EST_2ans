@@ -1,17 +1,88 @@
-from fastapi import FastAPI, WebSocket, Request
+from fastapi import FastAPI, WebSocket
+from pydantic import BaseModel
 import uvicorn
+import random
 
 
 from typing import Dict
 from game import Game
 
-from fastapi.staticfiles import StaticFiles
+
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
 
-games: Dict[str, Game] = {}
-games["test"] = Game()
+#  for CORS
+origins = ["*"]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+#  for data validation 
+# class type_ban(BaseModel):
+#     name = 'name'
+#     word = 'word'
+# class baned(BaseModel):
+#     token: str
+#     type: type_ban
+#     content: str
+#     reason: str
+    
+    
+
+
+
+
+# TODO data base
+# @app.post("/baned")
+# async def new_game(baned:baned):
+
+#     if baned.token != "azertyuiop":
+#         return 404
+    
+    
+#     if baned.type == "word":
+#         forbidden_names.append(baned.content)
+    
+#     elif baned.type == "name":
+#         forbidden_names.append(baned.content)
+
+#     return 200
+
+
+
+
+
+forbidden_names = ["server"]
+forbidden_words = []
+
+private_games: Dict[str, Game] = {}
+private_games["test"] = Game()
+
+public_games = {}
+
+@app.get("/new_game/{public}")
+async def new_game(public:str = "false"):
+
+    l = ["0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"]
+    game_id = ""
+
+    for i in range(5):
+        game_id += random.choice(l) 
+
+    if public == "true":
+        public_games[game_id] = Game()
+    else:
+        private_games[game_id] = Game()
+
+    return game_id
+
 
 
 
@@ -19,46 +90,65 @@ games["test"] = Game()
 async def websocket_endpoint(game_id:str,player_name:str,websocket: WebSocket):
     
     # check if game exists
-    if game_id not in games:
+
+    if game_id in public_games:
+        game = public_games[game_id]
+        game_type = "public"
+    elif game_id in private_games:
+        game = private_games[game_id]
+        game_type = "private"
+    else:
         return 404
-    game = games[game_id]
+
     # check if game is full
-    if game.players_number_limit == 0:
+    if game.max_number_of_players == 0:
         return 400
+    
     # check if player is already in game
     if player_name in game.players:
         return 400 
+
+    # check if player name is valid
+    if len(player_name) > 20 or len(player_name) < 5 or player_name in forbidden_names:
+        return 400
+    
     # open connection and create player
     await websocket.accept()
     await game.new_player(player_name,websocket)
     
-
     try:
         while True:
+# TODO modify for game end dasente tregare for itch player
+            # if game.end_game == True:
+            #     if game_type == "public":
+            #         del public_games[game_id]
+            #     else:
+            #         del private_games[game_id]
+            #     return 200
             
             data = await websocket.receive_text()
-            
-            if data == "move":
-                
-                game.player_move(player_name)
-                await game.get_players_position()
 
-            elif data == "rotation to right" or data == "rotation to left":
-                game.player_rotation(player_name,data)
-                await game.get_players_position()
+            # if data == "ready" and game.start_game == False:
 
-            elif data == "disconnect":
-                await game.player_disconnect(player_name)
+            #     game.player_ready(player_name)
 
-            else :
+            if data[0] == "/":
+                # filter message
+                data[0] = ""
+                l_data = data.split(" ")
+
+                for i in range(len(l_data)):
+                    if l_data[i] in forbidden_words:
+                        l_data[i] = "forbidden word"
+                data = " ".join(l_data)
+
                 await game.players_broadcast_message(player_name,data)
-            
 
-
-        
+            else:
+                await game.player_listener(player_name,data)
+              
     except Exception as e:
         print(e)
-        await game.player_privet_message(player_name,"sorry you have been disconnected because of an server problem")
         await game.player_disconnect(player_name)
         return 500
         

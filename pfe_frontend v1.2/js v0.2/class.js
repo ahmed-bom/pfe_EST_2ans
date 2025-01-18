@@ -5,17 +5,17 @@ class Game {
     this.scale = 40;
 
     this.status = "waiting";
-    this.player_color = ["#0000ff", "#ff0000", "#00ff00"];
+    this.player_color = ["#0000ff", "#ff0000", "#00ff00", "#ff00ff"];
 
     this.map = null;
 
     this.player_name = player_name;
-    this.player_id = null
-    // use id == index in players 
+    this.player_id = null;
+    // use id == index in players
     this.players = [];
   }
 
-  start(obj) {
+  update(obj) {
     this.status = "started";
     this.map = {
       array: obj.map, // 2D array
@@ -24,6 +24,7 @@ class Game {
   }
 
   get_players(players) {
+    this.players = [];
     for (let i = 0; i < players.length; i++) {
       let p = players[i];
       if (p.name == this.player_name) {
@@ -33,9 +34,10 @@ class Game {
     }
   }
   players_update(obj) {
-    // 
-    if(obj.length != this.players.length){
-      return 1
+    
+    if (obj.length != this.players.length) {
+      console.log("error count players");
+      return 1;
     }
     for (let i = 0; i < obj.length; i++) {
       this.players[i].x = obj[i].x;
@@ -44,7 +46,6 @@ class Game {
     }
   }
   droit(constant_x = 0, constant_y = 0) {
-
     this.droit_map(constant_x, constant_y);
     this.droit_players(constant_x, constant_y);
   }
@@ -90,17 +91,20 @@ class Game {
 
   droit_player(p, constant_x = 0, constant_y = 0) {
     // + 0.5 for center of square
-    let x = (p.x + 0.5) * this.scale + constant_x;
-    let y = (p.y + 0.5) * this.scale + constant_y;
+    let x = p.x * this.scale + constant_x;
+    let y = p.y * this.scale + constant_y;
     let angle = p.angle;
     let color;
 
-    if (p.name == this.player_name) {
-      color = this.player_color[0];
-    } else if (p.type == "hunter") {
+    if (p.type == "hunter") {
       color = this.player_color[1];
     } else if (p.type == "prey") {
       color = this.player_color[2];
+    }
+    else if (p.name == this.player_name) {
+      color = this.player_color[0];
+    } else {
+      color = this.player_color[3];
     }
     // Player representation
     this.ctx.fillStyle = color;

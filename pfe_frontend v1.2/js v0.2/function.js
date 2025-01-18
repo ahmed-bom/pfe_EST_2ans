@@ -12,7 +12,7 @@ function get_message_from_player(from, message, list_color_players) {
     color = getRandomColor();
     list_color_players[from] = color;
   }
-  chat.innerHTML +=
+  chat_messages.innerHTML +=
     "<br><span style='color:" +
     color +
     "'>" +
@@ -33,4 +33,37 @@ function getRandomColor() {
     color += letters[Math.floor(Math.random() * 16)];
   }
   return color;
+}
+
+
+function listener (data){
+
+  console.log(data);
+  if (data.type == "connected_successfully") {
+    console.log("connected successfully");
+  }
+
+  else if (data.type == "players_position") {
+    game.players_update(data.content);
+  }
+
+  else if (data.type == "player_disconnected") {
+    console.log("player disconnected");
+  }
+
+  else if (data.type == "new_player_connected") {
+    console.log("new_player_connected");
+  }
+
+  else if (data.type == "chat_message") {
+    get_message_from_player(data.from, data.content, game.list_color_players);
+  }
+  
+  else if (data.type == "game_start") {
+    console.log("game start");
+    // game.map.array = data.content.map;
+    // game.start_x = data.content.start.x;
+    // game.start_y = data.content.start.y;
+  }
+
 }

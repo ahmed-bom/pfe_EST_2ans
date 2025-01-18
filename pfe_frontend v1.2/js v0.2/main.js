@@ -9,20 +9,7 @@ let ws = connect_to_game("test", playerName);
 ws.onmessage = function (event) {
   // transformer data on json
   data = JSON.parse(event.data);
-  if (data.type == "message") {
-    console.log(data)
-    if (data.from == "server") {
-      get_message_from_server(data.content);
-    } else {
-      get_message_from_player(data.from, data.content, list_color_players);
-    }
-  } else if (data.type == "start_round") {
-    game.start(data.content);
-    game.droit(100, 100);
-  } else if (data.type == "players_position") {
-    game.players_update(data.content);
-    game.droit(100, 100);
-  }
+  listener(data);
 };
 
 // KEY DOWN ==
@@ -46,5 +33,10 @@ document.onkeydown = function KEY_DOWN(event) {
   }
 };
 
-// game.start(test_obj)
-// game.droit(100,100)
+// CHAT ==
+
+send.onclick = function () {
+  get_message_from_player(playerName, chat_input_text.value, list_color_players);
+  ws.send("/"+chat_input_text.value);
+  chat_input_text.value = "";
+};
