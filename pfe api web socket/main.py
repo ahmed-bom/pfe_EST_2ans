@@ -60,7 +60,7 @@ app.add_middleware(
 
 
 forbidden_names = ["server"]
-forbidden_words = []
+forbidden_words = ["kill"]
 
 private_games: Dict[str, Game] = {}
 private_games["test"] = Game()
@@ -118,7 +118,7 @@ async def websocket_endpoint(game_id:str,player_name:str,websocket: WebSocket):
     
     try:
         while True:
-# TODO modify for game end dasente tregare for itch player
+            # TODO modify for game end dasente tregare for itch player
             # if game.end_game == True:
             #     if game_type == "public":
             #         del public_games[game_id]
@@ -128,19 +128,10 @@ async def websocket_endpoint(game_id:str,player_name:str,websocket: WebSocket):
             
             data = await websocket.receive_text()
 
-            # if data == "ready" and game.start_game == False:
-
-            #     game.player_ready(player_name)
-
             if data[0] == "/":
-                # filter message
-                data[0] = ""
-                l_data = data.split(" ")
-
-                for i in range(len(l_data)):
-                    if l_data[i] in forbidden_words:
-                        l_data[i] = "forbidden word"
-                data = " ".join(l_data)
+                data = data[1:]
+                for word in forbidden_words:
+                    data = data.replace(word,"forbidden word")
 
                 await game.players_broadcast_message(player_name,data)
 

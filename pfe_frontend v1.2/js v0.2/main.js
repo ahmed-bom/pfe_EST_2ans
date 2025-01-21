@@ -1,9 +1,8 @@
 // GAME ==
 const game = new Game(ctx, cv, playerName);
-let list_color_players = { playerName: "#0000ff" };
 
 // CONNECT TO SERVER ==
-let ws = connect_to_game("test", playerName);
+let ws = connect_to_game(game_id, playerName);
 
 // LISTENER ==
 ws.onmessage = function (event) {
@@ -22,7 +21,7 @@ document.onkeydown = function KEY_DOWN(event) {
       ws.send("rotation to right");
       break;
     case "ArrowLeft":
-     ws.send("rotation to left");
+      ws.send("rotation to left");
       break;
     case "KeyH":
       if (chat.style.display == "none") {
@@ -36,7 +35,9 @@ document.onkeydown = function KEY_DOWN(event) {
 // CHAT ==
 
 send.onclick = function () {
-  get_message_from_player(playerName, chat_input_text.value, list_color_players);
-  ws.send("/"+chat_input_text.value);
-  chat_input_text.value = "";
+  if (chat_input_text.value != "") {
+    get_message_from_player(playerName, chat_input_text.value);
+    ws.send("/" + chat_input_text.value);
+    chat_input_text.value = "";
+  }
 };

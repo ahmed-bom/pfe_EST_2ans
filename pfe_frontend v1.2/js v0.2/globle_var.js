@@ -1,21 +1,24 @@
 // PARAMETERS ==
 const playerName = "player" + Math.floor(Math.random() * 1000);
+const game_id = 'test'
 // CANVAS ==
 const cv = document.getElementById("canvas");
 const ctx = cv.getContext("2d");
 cv.width = window.innerWidth;
 cv.height = window.innerHeight - 4;
-const pi2 = Math.PI * 2;
 // DOM ==
-// const ready_button = document.getElementById("ready_button");
 
 const info = document.getElementById("info");
 const chat = document.getElementById("chat");
-const chat_messages = document.getElementById("messages");
+chat.style.display = "none";
 
+const chat_messages = document.getElementById("messages");
 const chat_input_text = document.getElementById("input_text");
 const send = document.getElementById("send");
-chat.style.display = "none";
+
+
+const wallTexture = new Image();
+wallTexture.src = "mossy.png";
 
 // export json ==
 
@@ -38,45 +41,43 @@ connected_successfully = {
       [1, 0, 0, 0, 0, 0, 1],
       [1, 1, 1, 1, 1, 1, 1],
     ],
-    players_info: [
-      {
-        name: "player228",
-        type: "NULL",
+    players_info: {
+      player341: {
         x: 1,
         y: 1,
         angle: 1.57,
+        type: "NULL",
       },
-    ],
+    },
   },
 };
 
 new_player_connected = {
   type: "new_connected",
-  from: "player402",
+  from: "player847",
   content: {
-    name: "player402",
-    type: "NULL",
     x: 1,
     y: 1,
     angle: 1.57,
+    type: "NULL",
   },
 };
 
 players_position = {
   type: "players_position",
   from: "server",
-  content: [
-    {
-      x: 2.4999995243977517,
-      y: 1.0011944900661,
+  content: {
+    player341: {
+      x: 1.4999998414659172,
+      y: 1.0003981633553667,
       angle: 1.57,
     },
-    {
+    player847: {
       x: 1,
       y: 1,
       angle: 1.57,
     },
-  ],
+  },
 };
 
 game_start = {
@@ -127,5 +128,8 @@ Message = {
 
 function test(data) {
   console.log("test");
-  console.log(data);
+  listener(data);
 }
+
+
+

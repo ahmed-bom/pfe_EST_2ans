@@ -26,11 +26,9 @@ class Game:
 
         self.players: Dict[str, Player] = {}
 
-        self.max_number_of_players = 3 
+        self.max_number_of_players = 2 
         self.max_number_of_keys_to_win = 5
-        # self.players_ready_to_start = []
 
-        # self.start_game = False
         self.end_game = False
         
         
@@ -46,13 +44,12 @@ class Game:
         
         
     async def player_listener(self,player_name:str,data:str):
+
         if data == "move":
-            print(player_name,"move")
             self.move_player(player_name)
             await self.get_players_position()
 
         elif data == "rotation to right" or data == "rotation to left":
-            print(player_name,"rotation")
             self.player_rotation(player_name,data)
             await self.get_players_position()
 
@@ -61,37 +58,21 @@ class Game:
             await self.player_disconnect(player_name)
         
         else:
-
             await self.player_privet_message(player_name,"invalid command")
 
 
-#     async def player_ready(self,name:str):
-
-#         if name in self.players_ready_to_start:
-#             return 0
-        
-#         self.players_ready_to_start.append(name)
-#         if len(self.players_ready_to_start) == self.max_number_of_players:
-#             #self.start_game = True
-#             await self.give_types_to_players()
-#             await self.start() 
-#         else:
-#             self.players_broadcast_message("server",f"{name} is ready")
-
-
     async def new_player(self,name:str,socket:WebSocket):
-        
-        self.max_number_of_players -= 1
 
         p = Player(socket)
         self.players[name] = p
+        self.max_number_of_players -= 1
 
         print(name,"connected successfully")
         await self.go_to_lobe(name)
         
 
     async def go_to_lobe(self,player_name:str):
-            
+    
         print(player_name,"entered lobe")
         
         response = {
@@ -153,10 +134,10 @@ class Game:
 
     def Players_to_json(self,position:bool=False):
 
-        players = []
+        players = {}
         for p_name in self.players.keys():
             player = self.player_to_json(p_name,position)
-            players.append(player)
+            players[p_name] = player
 
         return players
 
@@ -167,33 +148,17 @@ class Game:
     def player_to_json(self,player_name : str , position:bool=False):
         
         player = self.players[player_name]
-        if position == True:
-            p = {
+
+        p = {
             "x": player.x,
             "y": player.y,
             "angle": player.angle
             }
-        else:
-            p = {
-            "name": player_name,
-            "type": player.type,
-            "x": player.x,
-            "y": player.y,
-            "angle": player.angle,
-            }
+        if position == False:
+            p["type"] = player.type
 
         return p
     
-#     def player_position(self,player_name:str):
-
-#         player = self.players[player_name]
-#         p = {
-#             "x": player.x,
-#             "y": player.y,
-#             "angle": player.angle
-#             }
-        
-#         return p
 
     def move_player(self,player_name:str):
 
@@ -223,9 +188,6 @@ class Game:
             #     nex_j = int(nex_x)
             #     nex_i = int(nex_y)
 
-
-
-
         player.x = nex_x
         player.y = nex_y
 
@@ -242,10 +204,7 @@ class Game:
         elif rotation_type == "rotation to left":
             player.angle += player.rotation_speed
 
-
-
-
-        
+   
     async def player_privet_message(self,target_name:str,content,type: str="message"):
 
         response = {
@@ -267,18 +226,18 @@ class Game:
 
         for  p_name in self.players.keys():
 
-            p = self.players[p_name]
-            if p_name == from_name or p_name == "server":
+            if p_name == from_name :
                 continue
 
+            p = self.players[p_name]
             await p.socket.send_json(response)
 
 
-    async def player_disconnect(self,player_name:str,message:str="disconnected"):
-
-        await self.players_broadcast_message(player_name,message,"disconnected")
+    async def player_disconnect(self,player_name:str):
+        print(player_name,"disconnected")
         await  self.players[player_name].socket.close()
         self.players.pop(player_name)
+        await self.players_broadcast_message(player_name,"player disconnected","disconnected")
         
     
 

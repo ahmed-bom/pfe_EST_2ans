@@ -5,56 +5,50 @@ class Game {
     this.scale = 40;
 
     this.status = "waiting";
-    this.player_color = ["#0000ff", "#ff0000", "#00ff00", "#ff00ff"];
 
     this.map = null;
 
     this.player_name = player_name;
-    this.player_id = null;
-    // use id == index in players
-    this.players = [];
+    this.players = {};
   }
 
-  update(obj) {
-    this.status = "started";
+  connected(obj) {
+    this.status = "connected";
     this.map = {
-      array: obj.map, // 2D array
+      array: obj.content.map, // 2D array
     };
-    this.get_players(obj.players_info);
+    this.players = obj.content.players_info;
+    for (let p in this.players) {
+      this.players[p].color = getRandomColor();
+    }
   }
 
-  get_players(players) {
-    this.players = [];
-    for (let i = 0; i < players.length; i++) {
-      let p = players[i];
-      if (p.name == this.player_name) {
-        this.player_id = i;
-      }
-      this.players.push(p);
+  player_disconnected(name) {
+    delete this.players[name];
+  }
+
+  new_connected(obj) {
+    this.players[obj.from] = obj.content;
+    this.players[obj.from].color = getRandomColor();
+  }
+
+  players_update_position(obj) {
+    for (let p in obj.content) {
+      this.players[p].x = obj.content[p].x;
+      this.players[p].y = obj.content[p].y;
+      this.players[p].angle = obj.content[p].angle;
     }
   }
-  players_update(obj) {
-    
-    if (obj.length != this.players.length) {
-      console.log("error count players");
-      return 1;
-    }
-    for (let i = 0; i < obj.length; i++) {
-      this.players[i].x = obj[i].x;
-      this.players[i].y = obj[i].y;
-      this.players[i].angle = obj[i].angle;
-    }
-  }
+
   droit(constant_x = 0, constant_y = 0) {
     this.droit_map(constant_x, constant_y);
     this.droit_players(constant_x, constant_y);
   }
 
-  droit_min_map(constant_x = 0, constant_y = 0) {}
-
   droit_map(constant_x = 0, constant_y = 0) {
     let map_length_i = this.map.array.length;
     let map_length_j = this.map.array[0].length;
+
     for (let i = 0; i < map_length_i; i++) {
       for (let j = 0; j < map_length_j; j++) {
         this.droit_square(i, j, constant_x, constant_y);
@@ -62,9 +56,9 @@ class Game {
     }
   }
 
-  droit_square(x, y, constant_x = 0, constant_y = 0) {
+  droit_square(i, j, constant_x = 0, constant_y = 0) {
     // constant for adjusting position of map
-    let square = this.map.array[x][y];
+    let square = this.map.array[i][j];
     const colorMap = {
       0: "white",
       1: "black",
@@ -76,16 +70,16 @@ class Game {
     // color mapping default = gray
     this.ctx.fillStyle = colorMap[square] || "gray";
     this.ctx.fillRect(
-      x * this.scale + constant_x,
-      y * this.scale + constant_y,
+      j * this.scale + constant_x,
+      i * this.scale + constant_y,
       this.scale,
       this.scale
     );
   }
 
   droit_players(constant_x = 0, constant_y = 0) {
-    for (let i = 0; i < this.players.length; i++) {
-      this.droit_player(this.players[i], constant_x, constant_y);
+    for (let p in this.players) {
+      this.droit_player(this.players[p], constant_x, constant_y);
     }
   }
 
@@ -96,16 +90,7 @@ class Game {
     let angle = p.angle;
     let color;
 
-    if (p.type == "hunter") {
-      color = this.player_color[1];
-    } else if (p.type == "prey") {
-      color = this.player_color[2];
-    }
-    else if (p.name == this.player_name) {
-      color = this.player_color[0];
-    } else {
-      color = this.player_color[3];
-    }
+    color = "red";
     // Player representation
     this.ctx.fillStyle = color;
     this.ctx.beginPath();
@@ -122,5 +107,139 @@ class Game {
     this.ctx.lineWidth = this.scale / 10;
     this.ctx.strokeStyle = color;
     this.ctx.stroke();
+  }
+
+  castRay(rayAngle, player_name) {
+    let p = this.players[player_name];
+    let playerPos = { x: p.x, y: p.y };
+
+    const map = game.map.array;
+    // Normalize angle
+    rayAngle = rayAngle % (2 * Math.PI);
+    if (rayAngle < 0) rayAngle += 2 * Math.PI;
+
+    const right =
+      Math.abs(Math.cos(rayAngle)) > 0.0001 ? Math.cos(rayAngle) > 0 : null;
+    const up =
+      Math.abs(Math.sin(rayAngle)) > 0.0001 ? Math.sin(rayAngle) > 0 : null;
+
+    let distToWall = 0;
+    let hitWall = false;
+    let wallX = 0;
+
+    // Player's current cell
+    let mapX = Math.floor(playerPos.x);
+    let mapY = Math.floor(playerPos.y);
+
+    // Ray's direction vector
+    const rayDirX = Math.cos(rayAngle);
+    const rayDirY = Math.sin(rayAngle);
+
+    // Length of ray from current position to next x or y-side
+    const deltaDistX = Math.abs(1 / rayDirX);
+    const deltaDistY = Math.abs(1 / rayDirY);
+
+    // Calculate step and initial sideDist
+    const stepX = right ? 1 : -1;
+    const stepY = up ? 1 : -1;
+
+    let sideDistX = right
+      ? (Math.floor(playerPos.x + 1) - playerPos.x) * deltaDistX
+      : (playerPos.x - Math.floor(playerPos.x)) * deltaDistX;
+
+    let sideDistY = up
+      ? (Math.floor(playerPos.y + 1) - playerPos.y) * deltaDistY
+      : (playerPos.y - Math.floor(playerPos.y)) * deltaDistY;
+
+    // DDA Algorithm
+    let side;
+    while (!hitWall) {
+      // Jump to next map square
+      if (sideDistX < sideDistY) {
+        sideDistX += deltaDistX;
+        mapX += stepX;
+        side = 0;
+      } else {
+        sideDistY += deltaDistY;
+        mapY += stepY;
+        side = 1;
+      }
+
+      // Check if ray has hit a wall
+      if (map[mapY] && map[mapY][mapX] === 1) {
+        hitWall = true;
+        if (side === 0) {
+          distToWall = (mapX - playerPos.x + (1 - stepX) / 2) / rayDirX;
+          wallX = playerPos.y + distToWall * rayDirY;
+        } else {
+          distToWall = (mapY - playerPos.y + (1 - stepY) / 2) / rayDirY;
+          wallX = playerPos.x + distToWall * rayDirX;
+        }
+        wallX -= Math.floor(wallX);
+      }
+    }
+
+    return {
+      distance: distToWall,
+      side: side,
+      wallX: wallX,
+    };
+  }
+
+  render(RAYS, FOV, player_name, wallTexture) {
+    // playerAngle, playerPos, this.cv, ctx, wallTexture;
+    let p = this.players[player_name];
+    let playerAngle = p.angle + Math.PI / 2;
+
+    // Clear screen
+    this.ctx.fillStyle = "#4a5a6a";
+    this.ctx.fillRect(0, 0, this.cv.width, this.cv.height / 2);
+    this.ctx.fillStyle = "#3a2a1a";
+    this.ctx.fillRect(0, this.cv.height / 2, this.cv.width, this.cv.height / 2);
+
+    // Cast rays
+    for (let x = 0; x < RAYS; x++) {
+      const rayAngle = playerAngle + (x / RAYS - 0.5) * FOV;
+      const ray = this.castRay(rayAngle, player_name);
+
+      // Remove fisheye effect
+      const correctDistance = ray.distance * Math.cos(rayAngle - playerAngle);
+
+      // Calculate wall height
+      const wallHeight = (this.cv.height * 0.5) / correctDistance;
+      const wallTop = (this.cv.height - wallHeight) / 2;
+      const wallBottom = (this.cv.height + wallHeight) / 2;
+
+      // Draw wall slice
+      if (wallTexture.complete) {
+        const textureX = Math.floor(ray.wallX * wallTexture.width);
+        const brightness = ray.side === 1 ? 0.7 : 1;
+        this.ctx.globalAlpha = brightness / (1 + correctDistance * 0.1);
+
+        this.ctx.drawImage(
+          wallTexture,
+          textureX,
+          0,
+          1,
+          wallTexture.height,
+          x,
+          wallTop,
+          1,
+          wallBottom - wallTop
+        );
+
+        this.ctx.globalAlpha = 1;
+      } else {
+        const brightness = ray.side === 1 ? 0.7 : 1;
+        const shade = Math.min(
+          255,
+          Math.floor(255 / (1 + correctDistance * 0.1))
+        );
+        this.ctx.fillStyle = `rgb(${shade * brightness},${shade * brightness},${
+          shade * brightness
+        })`;
+        this.ctx.fillRect(x, wallTop, 1, wallBottom - wallTop);
+      }
+    }
   }
 }
