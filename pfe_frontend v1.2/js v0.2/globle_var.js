@@ -1,13 +1,15 @@
 // PARAMETERS ==
 const playerName = "player" + Math.floor(Math.random() * 1000);
-const game_id = 'test'
+const game_id = "test";
+const MOUSE_SENSITIVITY = 0.002;
+
 // CANVAS ==
 const cv = document.getElementById("canvas");
 const ctx = cv.getContext("2d");
 cv.width = window.innerWidth;
 cv.height = window.innerHeight - 4;
-// DOM ==
 
+// DOM ==
 const info = document.getElementById("info");
 const chat = document.getElementById("chat");
 chat.style.display = "none";
@@ -16,120 +18,46 @@ const chat_messages = document.getElementById("messages");
 const chat_input_text = document.getElementById("input_text");
 const send = document.getElementById("send");
 
+// TEXTURES ==
+const wallTexture_1 = new Image();
+wallTexture_1.src = "img/wall_2.jpg";
+const wallTexture_2 = new Image();
+wallTexture_2.src = "img/wall_2d.jpg";
 
-const wallTexture = new Image();
-wallTexture.src = "mossy.png";
+const playerTexture_1 = new Image();
+playerTexture_1.src = "img/monster.png";
+const playerTexture_2 = new Image();
+playerTexture_2.src = "img/player_1.png";
 
-// export json ==
+const backgroundTexture_1 = new Image();
+backgroundTexture_1.src = "img/Sky-night_1.jpg";
+const backgroundTexture_2 = new Image();
+backgroundTexture_2.src = "img/Stone-Floor_1.jpg";
 
-response = {
-  type: "type",
-  from: "from_name",
-  content: "content",
+
+const Textures = {
+  walls: [wallTexture_1, wallTexture_2],
+  players: [playerTexture_1, playerTexture_2],
+  background: [backgroundTexture_1, backgroundTexture_2],
 };
 
-connected_successfully = {
-  type: "connected_successfully",
-  from: "server",
-  content: {
-    map: [
-      [1, 1, 1, 1, 1, 1, 1],
-      [1, 0, 0, 0, 0, 0, 1],
-      [1, 0, 0, 0, 0, 0, 1],
-      [1, 0, 1, 0, 1, 0, 1],
-      [1, 0, 0, 0, 0, 0, 1],
-      [1, 0, 0, 0, 0, 0, 1],
-      [1, 1, 1, 1, 1, 1, 1],
-    ],
-    players_info: {
-      player341: {
-        x: 1,
-        y: 1,
-        angle: 1.57,
-        type: "NULL",
-      },
-    },
-  },
-};
+// AUDIO ==
+const background_song = new Audio()
+background_song.src = "audio/horror-background.mp3";
 
-new_player_connected = {
-  type: "new_connected",
-  from: "player847",
-  content: {
-    x: 1,
-    y: 1,
-    angle: 1.57,
-    type: "NULL",
-  },
-};
 
-players_position = {
-  type: "players_position",
-  from: "server",
-  content: {
-    player341: {
-      x: 1.4999998414659172,
-      y: 1.0003981633553667,
-      angle: 1.57,
-    },
-    player847: {
-      x: 1,
-      y: 1,
-      angle: 1.57,
-    },
-  },
-};
+// CONTROLS ==
 
-game_start = {
-  type: "game_start",
-  from: "server",
-  content: {
-    map: [
-      [1, 1, 1, 1, 1, 1, 1],
-      [1, 0, 0, 0, 0, 0, 1],
-      [1, 0, 0, 0, 0, 0, 1],
-      [1, 0, 1, 0, 1, 0, 1],
-      [1, 0, 0, 0, 0, 0, 1],
-      [1, 0, 0, 0, 0, 0, 1],
-      [1, 1, 1, 1, 1, 1, 1],
-    ],
-    players_info: [
-      {
-        name: "player228",
-        type: "prey",
-        x: 1,
-        y: 1,
-        angle: 1.57,
-      },
-      {
-        name: "player128",
-        type: "prey",
-        x: 1,
-        y: 1,
-        angle: 1.57,
-      },
-      {
-        name: "player69",
-        type: "hunter",
-        x: 6,
-        y: 6,
-        angle: 1.57,
-      },
-    ],
-    number_of_keys_to_win: 5,
-  },
-};
-
-Message = {
-  type: "message",
-  from: "name",
-  content: "message content",
-};
-
-function test(data) {
-  console.log("test");
-  listener(data);
-}
+let MOUSE_CONTROLS = false;
+let AUDIO_ON = false
+// let MOUSE_LEFT = false;
+// let MOUSE_RIGHT = false;
+// let KEY_W = false;
+let KEY_CHAT = "KeyH";
+let KEY_CLICK = "KeyK";
+let KEY_Left = "ArrowLeft";
+let KEY_Right = "ArrowRight";
+let KEY_MOV = "Space";
 
 
 

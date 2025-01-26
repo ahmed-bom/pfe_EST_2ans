@@ -118,29 +118,24 @@ async def websocket_endpoint(game_id:str,player_name:str,websocket: WebSocket):
     
     try:
         while True:
-            # TODO modify for game end dasente tregare for itch player
-            # if game.end_game == True:
-            #     if game_type == "public":
-            #         del public_games[game_id]
-            #     else:
-            #         del private_games[game_id]
-            #     return 200
             
             data = await websocket.receive_text()
 
             if data[0] == "/":
-                data = data[1:]
+                data = data[1:] 
                 for word in forbidden_words:
                     data = data.replace(word,"forbidden word")
 
                 await game.players_broadcast_message(player_name,data)
 
             else:
-                await game.player_listener(player_name,data)
+                if  game.players[player_name].type != "spectate":
+                    await game.player_listener(player_name,data)
               
     except Exception as e:
         print(e)
-        await game.player_disconnect(player_name)
+        # !!!!!! TODO
+        await game.player_disconnect(player_name,websocket)
         return 500
         
 

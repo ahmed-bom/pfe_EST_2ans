@@ -1,22 +1,35 @@
 class Game {
-  constructor(ctx, cv, player_name) {
+  constructor(ctx, cv, player_name, Textures) {
     this.ctx = ctx;
     this.cv = cv;
+    this.Textures = Textures;
+
     this.scale = 40;
-
-    this.status = "waiting";
-
+    this.spectate_mod = false;
     this.map = null;
+    this.key_number = null;
 
     this.player_name = player_name;
+    this.player_view_angle = Math.PI / 3;
+    this.player_view_distance = 10;
     this.players = {};
   }
 
   connected(obj) {
-    this.status = "connected";
     this.map = {
       array: obj.content.map, // 2D array
     };
+    this.players = obj.content.players_info;
+    for (let p in this.players) {
+      this.players[p].color = getRandomColor();
+    }
+  }
+
+  start(obj) {
+    this.map = {
+      array: obj.content.map, // 2D array
+    };
+    this.key_number = obj.number_of_keys_to_win;
     this.players = obj.content.players_info;
     for (let p in this.players) {
       this.players[p].color = getRandomColor();
@@ -37,6 +50,65 @@ class Game {
       this.players[p].x = obj.content[p].x;
       this.players[p].y = obj.content[p].y;
       this.players[p].angle = obj.content[p].angle;
+    }
+  }
+
+  click() {
+    let p = this.players[this.player_name];
+    if (p.type == "hunter") {
+      return this.kill(p);
+    } else {
+      return this.get_key(p);
+    }
+  }
+
+  kill(h) {
+    for (let p_name in this.players) {
+      if (p_name == this.player_name) continue;
+      let p = this.players[p_name];
+
+      if (
+        Math.floor(h.x) == Math.floor(p.x) &&
+        Math.floor(h.y) == Math.floor(p.y)
+      ) {
+        delete this.players[p_name];
+        return true;
+      }
+    }
+    return false;
+  }
+
+  player_kill(p_name) {
+    delete this.players[p_name];
+    if (p_name == this.player_name) {
+      this.spectate_mod = true;
+      for (p_name in this.players) {
+        if (this.players[p_name].type == "prey") {
+          this.player_name = p_name;
+          break;
+        }
+      }
+      console.log("you are dead");
+      this.render()
+    }
+  }
+
+  get_key(p) {
+    let x = Math.floor(p.x);
+    let y = Math.floor(p.y);
+
+    if (this.map.array[y][x] == 2) {
+      this.map.array[y][x] = 0;
+      this.key_number--;
+      return true;
+    }
+    return false;
+  }
+
+  player_get_key(position) {
+    if (this.map.array[position.y][position.x] === 2) {
+      this.map.array[position.y][position.x] = 0;
+      this.key_number--;
     }
   }
 
@@ -87,7 +159,7 @@ class Game {
     // + 0.5 for center of square
     let x = p.x * this.scale + constant_x;
     let y = p.y * this.scale + constant_y;
-    let angle = p.angle;
+    let angle = p.angle; //- Math.PI / 2;
     let color;
 
     color = "red";
@@ -112,16 +184,16 @@ class Game {
   castRay(rayAngle, player_name) {
     let p = this.players[player_name];
     let playerPos = { x: p.x, y: p.y };
-
     const map = game.map.array;
+
     // Normalize angle
     rayAngle = rayAngle % (2 * Math.PI);
     if (rayAngle < 0) rayAngle += 2 * Math.PI;
 
     const right =
-      Math.abs(Math.cos(rayAngle)) > 0.0001 ? Math.cos(rayAngle) > 0 : null;
-    const up =
       Math.abs(Math.sin(rayAngle)) > 0.0001 ? Math.sin(rayAngle) > 0 : null;
+    const up =
+      Math.abs(Math.cos(rayAngle)) > 0.0001 ? Math.cos(rayAngle) > 0 : null;
 
     let distToWall = 0;
     let hitWall = false;
@@ -132,8 +204,8 @@ class Game {
     let mapY = Math.floor(playerPos.y);
 
     // Ray's direction vector
-    const rayDirX = Math.cos(rayAngle);
-    const rayDirY = Math.sin(rayAngle);
+    const rayDirX = Math.sin(rayAngle);
+    const rayDirY = Math.cos(rayAngle);
 
     // Length of ray from current position to next x or y-side
     const deltaDistX = Math.abs(1 / rayDirX);
@@ -153,7 +225,8 @@ class Game {
 
     // DDA Algorithm
     let side;
-    while (!hitWall) {
+    for (let i = 0; i < this.player_view_distance; i++) {
+      if (hitWall) break;
       // Jump to next map square
       if (sideDistX < sideDistY) {
         sideDistX += deltaDistX;
@@ -185,61 +258,171 @@ class Game {
       wallX: wallX,
     };
   }
+  draw_background() {
+    const backgroundTexture = this.Textures.background;
 
-  render(RAYS, FOV, player_name, wallTexture) {
-    // playerAngle, playerPos, this.cv, ctx, wallTexture;
-    let p = this.players[player_name];
-    let playerAngle = p.angle + Math.PI / 2;
+    if (backgroundTexture[0].complete) {
+      this.ctx.drawImage(
+        backgroundTexture[0],
+        0,
+        0,
+        this.cv.width,
+        this.cv.height / 2
+      );
+    } else {
+      this.ctx.fillStyle = "#4a5a6a";
+      this.ctx.fillRect(0, 0, this.cv.width, this.cv.height / 2);
+    }
+    if (backgroundTexture[1].complete) {
+      this.ctx.drawImage(
+        backgroundTexture[1],
+        0,
+        this.cv.height / 2,
+        this.cv.width,
+        this.cv.height / 2
+      );
+    } else {
+      this.ctx.fillStyle = "#3a2a1a";
+      this.ctx.fillRect(
+        0,
+        this.cv.height / 2,
+        this.cv.width,
+        this.cv.height / 2
+      );
+    }
+  }
 
-    // Clear screen
-    this.ctx.fillStyle = "#4a5a6a";
-    this.ctx.fillRect(0, 0, this.cv.width, this.cv.height / 2);
-    this.ctx.fillStyle = "#3a2a1a";
-    this.ctx.fillRect(0, this.cv.height / 2, this.cv.width, this.cv.height / 2);
+  draw_wal(side, wallX, Distance, x) {
+    // Calculate wall height
+    const wallHeight = (this.cv.height * 0.5) / Distance;
+    const wallTop = (this.cv.height - wallHeight) / 2;
+    const wallBottom = (this.cv.height + wallHeight) / 2;
+
+    const wallTexture =
+      side === 0 ? this.Textures.walls[0] : this.Textures.walls[1];
+
+    if (wallTexture.complete) {
+      const textureX = Math.floor(wallX * wallTexture.width);
+
+      this.ctx.drawImage(
+        wallTexture,
+        textureX,
+        0,
+        1,
+        wallTexture.height,
+        x,
+        wallTop,
+        1,
+        wallBottom - wallTop
+      );
+    } else {
+      this.ctx.fillStyle = side == 0 ? "#444444" : "#8d8d8d";
+      this.ctx.fillRect(x, wallTop, 1, wallBottom - wallTop);
+    }
+  }
+
+  draw_Players(wallDistances) {
+    for (let p in this.players) {
+      // Skip current player
+      if (p == this.player_name) continue;
+      const player = this.players[this.player_name];
+      const otherPlayer = this.players[p];
+
+      const mapX = Math.floor(otherPlayer.x);
+      const mapY = Math.floor(otherPlayer.y);
+      const map = this.map.array;
+      // Skip if player is in a wall or outside map bounds
+      if (!map[mapY] || map[mapY][mapX] !== 0) continue;
+
+      const dx = otherPlayer.x - player.x;
+      const dy = otherPlayer.y - player.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      const angleToPlayer = Math.atan2(dx, dy);
+
+      // Determine relative angle and normalize it
+      let relativeAngle = angleToPlayer - player.angle;
+
+      // Check if player is within FOV
+      const FOV = this.player_view_angle;
+      if (Math.abs(relativeAngle) > FOV / 2) continue;
+
+      const screenX = (0.5 + relativeAngle / FOV) * canvas.width;
+      // Calculate wall height
+      const spriteHeight = (canvas.height * 0.5) / distance;
+      const spriteWidth = spriteHeight; // Assuming square sprite
+      const spriteTop = (canvas.height - spriteHeight) / 2;
+
+      // Calculate sprite screen boundaries
+      const leftBound = Math.max(0, Math.floor(screenX - spriteWidth / 2));
+      const rightBound = Math.min(
+        canvas.width,
+        Math.ceil(screenX + spriteWidth / 2)
+      );
+
+      // Draw sprite
+      const playerTexture =
+        otherPlayer.type == "hunter"
+          ? this.Textures.players[0]
+          : this.Textures.players[1];
+
+      if (playerTexture.complete) {
+        // Draw sprite column by column
+        for (let sx = leftBound; sx < rightBound; sx++) {
+          // Calculate texture x-coordinate
+          const textureX =
+            ((sx - (screenX - spriteWidth / 2)) / spriteWidth) *
+            playerTexture.width;
+
+          // Check if this column is behind a wall
+          const columnDistance =
+            distance *
+            Math.cos(
+              player.angle + (sx / canvas.width - 0.5) * FOV - angleToPlayer
+            );
+
+          if (columnDistance < wallDistances[sx]) {
+            // Calculate visible portion of the sprite
+            const visibleTop = spriteTop;
+            const visibleHeight = spriteHeight;
+
+            ctx.drawImage(
+              playerTexture,
+              textureX,
+              0,
+              1,
+              playerTexture.height,
+              sx,
+              visibleTop,
+              1,
+              visibleHeight
+            );
+          }
+        }
+      }
+    }
+  }
+
+  render() {
+    const RAYS = this.cv.width;
+    const FOV = this.player_view_angle;
+
+    const playerAngle = this.players[this.player_name].angle;
+    const wallDistances = new Array(RAYS).fill(Infinity);
+
+    this.draw_background();
 
     // Cast rays
     for (let x = 0; x < RAYS; x++) {
       const rayAngle = playerAngle + (x / RAYS - 0.5) * FOV;
-      const ray = this.castRay(rayAngle, player_name);
+      const ray = this.castRay(rayAngle, this.player_name);
 
       // Remove fisheye effect
-      const correctDistance = ray.distance * Math.cos(rayAngle - playerAngle);
-
-      // Calculate wall height
-      const wallHeight = (this.cv.height * 0.5) / correctDistance;
-      const wallTop = (this.cv.height - wallHeight) / 2;
-      const wallBottom = (this.cv.height + wallHeight) / 2;
+      const correctDistance = ray.distance * Math.cos(rayAngle - playerAngle); //cos
+      wallDistances[x] = correctDistance;
 
       // Draw wall slice
-      if (wallTexture.complete) {
-        const textureX = Math.floor(ray.wallX * wallTexture.width);
-        const brightness = ray.side === 1 ? 0.7 : 1;
-        this.ctx.globalAlpha = brightness / (1 + correctDistance * 0.1);
-
-        this.ctx.drawImage(
-          wallTexture,
-          textureX,
-          0,
-          1,
-          wallTexture.height,
-          x,
-          wallTop,
-          1,
-          wallBottom - wallTop
-        );
-
-        this.ctx.globalAlpha = 1;
-      } else {
-        const brightness = ray.side === 1 ? 0.7 : 1;
-        const shade = Math.min(
-          255,
-          Math.floor(255 / (1 + correctDistance * 0.1))
-        );
-        this.ctx.fillStyle = `rgb(${shade * brightness},${shade * brightness},${
-          shade * brightness
-        })`;
-        this.ctx.fillRect(x, wallTop, 1, wallBottom - wallTop);
-      }
+      this.draw_wal(ray.side, ray.wallX, correctDistance, x);
     }
+    this.draw_Players(wallDistances);
   }
 }

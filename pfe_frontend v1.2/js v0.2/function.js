@@ -7,10 +7,9 @@ function connect_to_game(gameName, playerName) {
 }
 
 function get_message_from_player(from, message) {
+  let color = game.players[from].color;
+  // color = getRandomColor();
 
-  // let color = game.players[from].color;
-  color = getRandomColor();
-  
   chat_messages.innerHTML +=
     "<br><span style='color:" +
     color +
@@ -22,7 +21,10 @@ function get_message_from_player(from, message) {
 }
 
 function get_message_from_server(message) {
-    info.innerHTML = "<h1>" + message + "</h1>";
+  info.innerHTML = "<h1>" + message + "</h1>";
+  setTimeout(() => {
+    info.innerHTML = "";
+  }, 3000);
 }
 
 function getRandomColor() {
@@ -34,59 +36,56 @@ function getRandomColor() {
   return color;
 }
 
-
-function listener (data){
-
+function listener(data) {
   // console.log(data);
   if (data.type == "connected_successfully") {
     console.log("connected successfully");
     game.connected(data);
-    
-    game.render(canvas.width, Math.PI / 3, playerName, wallTexture);
+    game.render(playerName);
     game.droit();
-  }
-
+  } 
   else if (data.type == "players_position") {
     game.players_update_position(data);
-    
-    game.render(canvas.width, Math.PI / 3, playerName, wallTexture);
+    game.render(playerName);
     game.droit();
-  }
-
+  } 
   else if (data.type == "disconnected") {
     console.log("player disconnected");
     get_message_from_server(data.from + " disconnected");
     game.player_disconnected(data.from);
     game.droit();
-  }
-
+  } 
   else if (data.type == "new_connected") {
     console.log("new_player_connected");
     get_message_from_server(data.from + " connected");
     game.new_connected(data);
     game.droit();
+  }
+  else if (data.type == "kill") {
+    get_message_from_server(data.from + " killed " + data.content);
+    game.player_kill(data.content)
+  }
+  else if (data.type == "get_key") {
+    game.player_get_key(data.content)
   } 
-  
   else if (data.type == "message") {
-    console.log(data);
     if (data.from == "server") {
       get_message_from_server(data.content);
-    }else{
+      if (data.content == "you are the hunter") {
+        game.player_type = "hunter";
+      } else if (data.content == "you are a prey") {
+        game.player_type = "prey";
+      }
+    } else {
       get_message_from_player(data.from, data.content);
     }
-  } 
-  
-  else if (data.type == "game_start") {
+  } else if (data.type == "game_start") {
     console.log("game start");
-    get_message_from_server("Game start");
+    game.start(data);
+    // background_song.play();
+    game.render(playerName);
     game.droit();
-    // game.map.array = data.content.map;
-    // game.start_x = data.content.start.x;
-    // game.start_y = data.content.start.y;
-  }
-
-  else {
+  } else {
     console.log(data);
   }
-
 }
