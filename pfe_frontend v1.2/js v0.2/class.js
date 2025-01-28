@@ -89,7 +89,7 @@ class Game {
         }
       }
       console.log("you are dead");
-      this.render()
+      this.render();
     }
   }
 
@@ -225,6 +225,7 @@ class Game {
 
     // DDA Algorithm
     let side;
+    let door = false;
     for (let i = 0; i < this.player_view_distance; i++) {
       if (hitWall) break;
       // Jump to next map square
@@ -237,10 +238,13 @@ class Game {
         mapY += stepY;
         side = 1;
       }
-
+      
       // Check if ray has hit a wall
-      if (map[mapY] && map[mapY][mapX] === 1) {
+      if (map[mapY] && (map[mapY][mapX] === 1 || map[mapY][mapX] === 2)) {
         hitWall = true;
+        if (map[mapY][mapX] === 2) {
+          door = true;
+        }
         if (side === 0) {
           distToWall = (mapX - playerPos.x + (1 - stepX) / 2) / rayDirX;
           wallX = playerPos.y + distToWall * rayDirY;
@@ -256,6 +260,7 @@ class Game {
       distance: distToWall,
       side: side,
       wallX: wallX,
+      door: door,
     };
   }
   draw_background() {
@@ -292,7 +297,7 @@ class Game {
     }
   }
 
-  draw_wal(side, wallX, Distance, x) {
+  draw_wal(side, wallX, Distance, x, door) {
     // Calculate wall height
     const wallHeight = (this.cv.height * 0.5) / Distance;
     const wallTop = (this.cv.height - wallHeight) / 2;
@@ -318,6 +323,27 @@ class Game {
     } else {
       this.ctx.fillStyle = side == 0 ? "#444444" : "#8d8d8d";
       this.ctx.fillRect(x, wallTop, 1, wallBottom - wallTop);
+    }
+
+    if (door) {
+      const doorTexture = this.key_number === 0? this.Textures.door[0] : this.Textures.door[1];
+      const textureX = Math.floor(wallX * doorTexture.width);
+      if (doorTexture.complete) {
+        this.ctx.drawImage(
+          doorTexture,
+          textureX,
+          0,
+          1,
+          doorTexture.height,
+          x,
+          wallTop,
+          1,
+          wallBottom - wallTop
+        );
+      } else {
+        this.ctx.fillStyle = "#3a2a1a";
+        this.ctx.fillRect(x, wallTop, 1, wallBottom - wallTop);
+      }
     }
   }
 
@@ -421,7 +447,7 @@ class Game {
       wallDistances[x] = correctDistance;
 
       // Draw wall slice
-      this.draw_wal(ray.side, ray.wallX, correctDistance, x);
+      this.draw_wal(ray.side, ray.wallX, correctDistance, x,ray.door);
     }
     this.draw_Players(wallDistances);
   }

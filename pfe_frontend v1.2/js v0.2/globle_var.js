@@ -34,11 +34,17 @@ backgroundTexture_1.src = "img/Sky-night_1.jpg";
 const backgroundTexture_2 = new Image();
 backgroundTexture_2.src = "img/Stone-Floor_1.jpg";
 
+const doorTexture_1 = new Image();
+doorTexture_1.src = "img/old-wooden-door-open.png";
+const doorTexture_2 = new Image();
+doorTexture_2.src = "img/old-wooden-door.png";
+
 
 const Textures = {
   walls: [wallTexture_1, wallTexture_2],
   players: [playerTexture_1, playerTexture_2],
   background: [backgroundTexture_1, backgroundTexture_2],
+  door: [doorTexture_1, doorTexture_2],
 };
 
 // AUDIO ==

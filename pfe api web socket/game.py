@@ -236,7 +236,7 @@ class Game:
                 await self.players_broadcast_message(player_name,r,"get_key")
         elif player.type == "hunter":
             for prey_name in self.players.keys():
-
+ 
                 if player_name == prey_name : 
                     continue
                 prey = self.players[prey_name]
