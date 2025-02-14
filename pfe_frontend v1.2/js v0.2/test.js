@@ -7,94 +7,88 @@ response = {
 };
 
 connected_successfully = {
-  type: "connected_successfully",
   from: "server",
+  type: "enter_lobe",
   content: {
     map: [
       [1, 1, 1, 1, 1, 1, 1],
       [1, 0, 0, 0, 0, 0, 1],
-      [1, 0, 0, 0, 0, 0, 1],
-      [1, 0, 1, 0, 1, 0, 1],
-      [1, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 1, 0, 0, 1],
+      [1, 0, 0, 1, 0, 0, 1],
+      [1, 0, 0, 1, 0, 0, 1],
       [1, 0, 0, 0, 0, 0, 1],
       [1, 1, 1, 1, 1, 1, 1],
     ],
     players_info: {
-      player341: {
-        x: 1,
-        y: 1,
-        angle: 1.57,
+      player247: {
         type: "NULL",
+        x: 1.5,
+        y: 1.5,
+        angle: 0,
       },
     },
+    keys: {},
   },
 };
 
 new_player_connected = {
+  from: "player428",
   type: "new_connected",
-  from: "player847",
   content: {
-    x: 1,
-    y: 1,
-    angle: 1.57,
     type: "NULL",
+    x: 1.5,
+    y: 1.5,
+    angle: 0,
   },
 };
 
 players_position = {
-  type: "players_position",
   from: "server",
+  type: "players_position",
   content: {
-    player341: {
-      x: 1.4999998414659172,
-      y: 1.0003981633553667,
-      angle: 1.57,
-    },
-    player847: {
-      x: 1,
-      y: 1,
-      angle: 1.57,
+    player598: {
+      type: "NULL",
+      x: 1.5,
+      y: 1.5,
+      angle: 0,
     },
   },
 };
 
 game_start = {
-  type: "game_start",
   from: "server",
+  type: "game_start",
   content: {
     map: [
-      [1, 1, 1, 1, 1, 1, 1],
-      [1, 0, 0, 0, 0, 0, 1],
-      [1, 0, 0, 0, 0, 0, 1],
-      [1, 0, 1, 0, 1, 0, 1],
-      [1, 0, 0, 0, 0, 0, 1],
-      [1, 0, 0, 0, 0, 0, 1],
-      [1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1],
+      [1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1],
+      [1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1],
+      [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1],
+      [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+      [1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1],
+      [1, 2, 0, 0, 1, 2, 0, 0, 0, 0, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     ],
-    players_info: [
-      {
-        name: "player228",
+    players_info: {
+      player247: {
         type: "prey",
-        x: 1,
-        y: 1,
-        angle: 1.57,
+        x: 5.5,
+        y: 9.5,
+        angle: 0,
       },
-      {
-        name: "player128",
-        type: "prey",
-        x: 1,
-        y: 1,
-        angle: 1.57,
-      },
-      {
-        name: "player69",
+      player428: {
         type: "hunter",
-        x: 6,
-        y: 6,
-        angle: 1.57,
+        x: 1.5,
+        y: 9.5,
+        angle: 0,
       },
-    ],
-    number_of_keys_to_win: 5,
+    },
+    keys: {
+      77: [7, 7],
+    },
   },
 };
 

@@ -14,15 +14,19 @@ ws.onmessage = function (event) {
 // KEY DOWN ==
 document.onkeydown = function KEY_DOWN(event) {
   switch (event.code) {
+
     case KEY_MOV:
       ws.send("move");
       break;
+
     case KEY_Right:
       ws.send("rotation to right");
       break;
+
     case KEY_Left:
       ws.send("rotation to left");
       break;
+
     case KEY_CHAT:
       if (chat.style.display == "none") {
         chat.style.display = "block";
@@ -30,6 +34,7 @@ document.onkeydown = function KEY_DOWN(event) {
         chat.style.display = "none";
       }
       break;
+      
     case KEY_CLICK:
       if (game.click()){
          ws.send("click");

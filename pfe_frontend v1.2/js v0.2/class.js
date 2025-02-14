@@ -2,35 +2,30 @@ class Game {
   constructor(ctx, cv, player_name, Textures) {
     this.ctx = ctx;
     this.cv = cv;
+    this.FPS = 60 / 1000;
     this.Textures = Textures;
 
     this.scale = 40;
     this.spectate_mod = false;
     this.map = null;
-    this.key_number = null;
+    this.key_number = 0;
+    this.keys = {};
 
     this.player_name = player_name;
+    this.player_name_render = player_name;
     this.player_view_angle = Math.PI / 3;
     this.player_view_distance = 10;
     this.players = {};
   }
 
-  connected(obj) {
+  update(obj) {
+    this.player_name_render = this.player_name
     this.map = {
       array: obj.content.map, // 2D array
     };
     this.players = obj.content.players_info;
-    for (let p in this.players) {
-      this.players[p].color = getRandomColor();
-    }
-  }
-
-  start(obj) {
-    this.map = {
-      array: obj.content.map, // 2D array
-    };
-    this.key_number = obj.number_of_keys_to_win;
-    this.players = obj.content.players_info;
+    this.keys = obj.content.keys;
+    this.key_number = Object.keys(obj.content.keys).length;
     for (let p in this.players) {
       this.players[p].color = getRandomColor();
     }
@@ -54,17 +49,17 @@ class Game {
   }
 
   click() {
-    let p = this.players[this.player_name];
+    let p = this.players[this.player_name_render];
     if (p.type == "hunter") {
       return this.kill(p);
-    } else {
+    } else if ("prey") {
       return this.get_key(p);
     }
   }
 
   kill(h) {
     for (let p_name in this.players) {
-      if (p_name == this.player_name) continue;
+      if (p_name == this.player_name_render) continue;
       let p = this.players[p_name];
 
       if (
@@ -78,45 +73,75 @@ class Game {
     return false;
   }
 
-  player_kill(p_name) {
-    delete this.players[p_name];
-    if (p_name == this.player_name) {
-      this.spectate_mod = true;
-      for (p_name in this.players) {
-        if (this.players[p_name].type == "prey") {
-          this.player_name = p_name;
-          break;
-        }
+  player_get_killed(p_name) {
+    if (p_name in this.players) {
+      delete this.players[p_name];
+    }
+    if (this.player_name_render == p_name) {
+      this.spectate(p_name);
+      return 0;
+    }
+  }
+
+  player_win(p_name) {
+    if (p_name in this.players) {
+      delete this.players[p_name];
+    }
+    if (this.player_name_render == p_name) {
+      this.spectate(p_name);
+      return 0;
+    }
+  }
+
+  spectate(p_name) {
+    // console.log(this.player_name_render, p_name);
+    if (this.player_name_render != p_name) return 0;
+    for (let p in this.players) {
+      if (this.players[p].type == "prey") {
+        this.player_name_render = p;
+        return 0;
       }
-      console.log("you are dead");
-      this.render();
     }
   }
 
   get_key(p) {
     let x = Math.floor(p.x);
     let y = Math.floor(p.y);
-
-    if (this.map.array[y][x] == 2) {
-      this.map.array[y][x] = 0;
+    let key = y + "" + x;
+    if (key in this.keys) {
+      delete this.keys[key];
       this.key_number--;
       return true;
     }
     return false;
   }
 
-  player_get_key(position) {
-    if (this.map.array[position.y][position.x] === 2) {
-      this.map.array[position.y][position.x] = 0;
+  player_get_key(key_name) {
+    if (key_name in this.keys) {
+      delete this.keys[key_name];
       this.key_number--;
     }
   }
 
   droit(constant_x = 0, constant_y = 0) {
     this.droit_map(constant_x, constant_y);
+    this.droit_keys(constant_x, constant_y);
     this.droit_players(constant_x, constant_y);
   }
 
+  droit_keys(constant_x = 0, constant_y = 0) {
+    for (let key in this.keys) {
+      let key_position = this.keys[key];
+
+      this.ctx.fillStyle = "orange";
+      this.ctx.fillRect(
+        key_position[1] * this.scale + constant_x,
+        key_position[0] * this.scale + constant_y,
+        this.scale,
+        this.scale
+      );
+    }
+  }
   droit_map(constant_x = 0, constant_y = 0) {
     let map_length_i = this.map.array.length;
     let map_length_j = this.map.array[0].length;
@@ -181,8 +206,8 @@ class Game {
     this.ctx.stroke();
   }
 
-  castRay(rayAngle, player_name) {
-    let p = this.players[player_name];
+  castRay(rayAngle, player_name_render) {
+    let p = this.players[player_name_render];
     let playerPos = { x: p.x, y: p.y };
     const map = game.map.array;
 
@@ -238,7 +263,7 @@ class Game {
         mapY += stepY;
         side = 1;
       }
-      
+
       // Check if ray has hit a wall
       if (map[mapY] && (map[mapY][mapX] === 1 || map[mapY][mapX] === 2)) {
         hitWall = true;
@@ -326,7 +351,8 @@ class Game {
     }
 
     if (door) {
-      const doorTexture = this.key_number === 0? this.Textures.door[0] : this.Textures.door[1];
+      const doorTexture =
+        this.key_number === 0 ? this.Textures.door[0] : this.Textures.door[1];
       const textureX = Math.floor(wallX * doorTexture.width);
       if (doorTexture.complete) {
         this.ctx.drawImage(
@@ -350,8 +376,8 @@ class Game {
   draw_Players(wallDistances) {
     for (let p in this.players) {
       // Skip current player
-      if (p == this.player_name) continue;
-      const player = this.players[this.player_name];
+      if (p == this.player_name_render) continue;
+      const player = this.players[this.player_name_render];
       const otherPlayer = this.players[p];
 
       const mapX = Math.floor(otherPlayer.x);
@@ -432,7 +458,7 @@ class Game {
     const RAYS = this.cv.width;
     const FOV = this.player_view_angle;
 
-    const playerAngle = this.players[this.player_name].angle;
+    const playerAngle = this.players[this.player_name_render].angle;
     const wallDistances = new Array(RAYS).fill(Infinity);
 
     this.draw_background();
@@ -440,15 +466,19 @@ class Game {
     // Cast rays
     for (let x = 0; x < RAYS; x++) {
       const rayAngle = playerAngle + (x / RAYS - 0.5) * FOV;
-      const ray = this.castRay(rayAngle, this.player_name);
+      const ray = this.castRay(rayAngle, this.player_name_render);
 
       // Remove fisheye effect
       const correctDistance = ray.distance * Math.cos(rayAngle - playerAngle); //cos
       wallDistances[x] = correctDistance;
 
       // Draw wall slice
-      this.draw_wal(ray.side, ray.wallX, correctDistance, x,ray.door);
+      this.draw_wal(ray.side, ray.wallX, correctDistance, x, ray.door);
     }
     this.draw_Players(wallDistances);
+    this.droit();
+    setTimeout(() => {
+      this.render();
+    }, this.FPS);
   }
 }

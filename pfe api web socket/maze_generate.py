@@ -10,7 +10,7 @@ def generate_maze(map_dim:int):
         # make start point in (2k + 1) grid
         start_x = sid_x*2 + 1
         start_y = sid_y*2 + 1
-        maze[start_x, start_y] = 0
+        maze[start_x, start_y] = 2
         # Initialize the stack with the starting point
         stack = [(start_x, start_y)]
         # Define the end point
@@ -47,6 +47,7 @@ def generate_maze(map_dim:int):
                 stack.pop()
 
         # Set the start and end points
+        maze[end_x, end_y] = 2
         start = (start_x, start_y)
         end = (end_x, end_y)
         return maze, start, end
@@ -54,19 +55,22 @@ def generate_maze(map_dim:int):
 def add_points(maze, number_of_points = 7):
         limit_i,limit_j = maze.shape[0]-1,maze.shape[1]-1
         counter = 0
+        points = {}
         # calculate distance 
         # may be change  am note chore if it wrong
-        distance = (maze.shape[0]*maze.shape[1] / number_of_points)
+        distance = ((maze.shape[0]-2)*(maze.shape[1]-2) / (number_of_points*2))
         
         for i in range(1,limit_i):
             for j in range(1,limit_j):
-                counter += 1
-                if maze[i][j] == 0 and  counter > distance:
+                if maze[i][j] == 0 :
+                    counter += 1
+                if counter > distance:
                     counter = 0
-                    maze[i][j] = 2
                     number_of_points -= 1
-                    if number_of_points == 0 :
-                        return 0
+                    points[str(i)+str(j)] = [i,j]
+                    if number_of_points == 0:
+                         return points
+        return points
 def add_ports(maze,probability = 5):
         # probability of adding a port 1 / probability
         limit_i,limit_j = maze.shape[0]-1,maze.shape[1]-1

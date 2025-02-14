@@ -137,3 +137,15 @@ input:focus {
   padding: 5px;
   background-color: #3a3a3a;
 }
+
+
+#info{
+  position: absolute;
+  z-index: 2;
+  top: 2%;
+  left: 50%;
+  width: 25%;
+  margin: 10px;
+  transform: translate(-50%, -0%);
+  color: white;
+}

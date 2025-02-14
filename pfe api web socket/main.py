@@ -101,7 +101,7 @@ async def websocket_endpoint(game_id:str,player_name:str,websocket: WebSocket):
         return 404
 
     # check if game is full
-    if game.max_number_of_players == 0:
+    if game.number_of_players == len(game.players):
         return 400
     
     # check if player is already in game
@@ -124,7 +124,7 @@ async def websocket_endpoint(game_id:str,player_name:str,websocket: WebSocket):
             if data[0] == "/":
                 data = data[1:] 
                 for word in forbidden_words:
-                    data = data.replace(word,"forbidden word")
+                    data = data.replace(word,"******")
 
                 await game.players_broadcast_message(player_name,data)
 
@@ -134,9 +134,9 @@ async def websocket_endpoint(game_id:str,player_name:str,websocket: WebSocket):
               
     except Exception as e:
         print(e)
-        # !!!!!! TODO
         await game.player_disconnect(player_name,websocket)
         return 500
+    
         
 
 
@@ -145,3 +145,4 @@ async def websocket_endpoint(game_id:str,player_name:str,websocket: WebSocket):
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host= "127.0.0.1",port= 8080,reload= True)
+    
