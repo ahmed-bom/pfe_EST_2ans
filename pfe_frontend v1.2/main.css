@@ -149,3 +149,12 @@ input:focus {
   transform: translate(-50%, -0%);
   color: white;
 }
+
+#rede{
+  position: absolute;
+  z-index: 2;
+  top: 2%;
+  right: 0;
+  margin: 10px;
+  color: white;
+}

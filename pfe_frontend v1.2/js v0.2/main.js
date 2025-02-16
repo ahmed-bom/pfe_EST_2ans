@@ -1,5 +1,5 @@
 // GAME ==
-const game = new Game(ctx, cv, playerName,Textures);
+const game = new Game(ctx, cv, playerName, Textures);
 
 // CONNECT TO SERVER ==
 let ws = connect_to_game(game_id, playerName);
@@ -14,7 +14,6 @@ ws.onmessage = function (event) {
 // KEY DOWN ==
 document.onkeydown = function KEY_DOWN(event) {
   switch (event.code) {
-
     case KEY_MOV:
       ws.send("move");
       break;
@@ -34,12 +33,12 @@ document.onkeydown = function KEY_DOWN(event) {
         chat.style.display = "none";
       }
       break;
-      
+
     case KEY_CLICK:
-      if (game.click()){
-         ws.send("click");
-         console.log("click")
-      };
+      if (game.click()) {
+        ws.send("click");
+        console.log("click");
+      }
       break;
   }
 };
@@ -54,7 +53,18 @@ send.onclick = function () {
   }
 };
 
-
+rede.onclick = function () {
+  if (ar_you_red){
+    ws.send("not rede");
+    ar_you_red = false;
+    rede.innerHTML = "rede";
+  }
+  else {
+    ws.send("rede");
+    ar_you_red = true;
+    rede.innerHTML = "not rede";
+  }
+};
 
 cv.addEventListener("click", () => {
   if (MOUSE_CONTROLS) cv.requestPointerLock();
@@ -69,9 +79,9 @@ document.addEventListener("pointerlockchange", () => {
 });
 
 function updateCamera(e) {
-  if (e.movementX > 0){
+  if (e.movementX > 0) {
     ws.send("rotation to right");
-  }else {
-     ws.send("rotation to left");
+  } else {
+    ws.send("rotation to left");
   }
 }

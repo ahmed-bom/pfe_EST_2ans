@@ -1,7 +1,7 @@
 // CONNECT TO SERVER ==
 function connect_to_game(gameName, playerName) {
   let ws = new WebSocket(
-    "ws://127.0.0.1:8080/ws/" + gameName + "/" + playerName
+    "ws://127.0.0.1:8080/ws/public/" + gameName + "/" + playerName
   );
   return ws;
 }
@@ -44,7 +44,6 @@ function listener(data) {
       game.update(data);
       game.render(playerName);
       break;
-      
 
     case "players_position":
       game.players_update_position(data);
@@ -65,14 +64,14 @@ function listener(data) {
       game.update(data);
       break;
 
-    case "kill":
-      get_message_from_server(data.from + " killed " + data.content);
-      game.player_get_killed(data.content);
-      break;
-
     case "win":
       get_message_from_server(data.content + " won");
       game.player_win(data.content);
+      break;
+
+    case "kill":
+      get_message_from_server(data.from + " killed " + data.content);
+      game.player_get_killed(data.content);
       break;
 
     case "get_key":
@@ -80,11 +79,19 @@ function listener(data) {
       game.player_get_key(data.content);
       break;
 
+    case "player_rede":
+      get_message_from_server(data.from + " rede");
+      break;
+
+    case "player_not_rede":
+      get_message_from_server(data.from + " not rede");
+      break;
+
     case "message":
       if (data.from == "server") {
         get_message_from_server(data.content);
       } else {
-        get_message_from_player(data.from,data.content);
+        get_message_from_player(data.from, data.content);
       }
       break;
 

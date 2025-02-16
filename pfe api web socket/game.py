@@ -27,7 +27,7 @@ class Player:
 # ===================== DEF PARAMETER OF GAME ===============
 # ===========================================================
 
-DEF_NUMBER_OF_PLAYERS = 3
+DEF_NUMBER_OF_PLAYERS = 2
 
 DEF_NUMBER_OF_KEYS = 3
 
@@ -57,11 +57,14 @@ class Game:
         self.number_of_keys = number_of_keys
 
         self.ports = {}
-        # number_of_ports == 2
+        
 
         self.lobe = lobe
         self.map = lobe
         self.map_dim = map_dim
+
+        self.is_start = False
+        self.players_rede = {}
 
 
 # ===========================================================
@@ -150,24 +153,46 @@ class Game:
         print(name,"connected successfully")
         await self.go_to_lobe(name)
 
+
+    async def player_rede(self,player_name):
+
+        if self.is_start:
+            return
+        if player_name not in self.players_rede:
+            print(player_name,"rede")
+            self.players_rede[player_name] = player_name
+            await self.players_broadcast_message(player_name,"i am rede","player_rede")
+            if self.number_of_players == len(self.players_rede):
+                await self.start()
+
+    async def player_not_rede(self,player_name):
+
+        if self.is_start:
+            return
         
+        if player_name in self.players_rede:
+            print(player_name,"not rede")
+            self.players_rede.pop(player_name)
+            await self.players_broadcast_message(player_name,"i am not rede","player_not_rede")
+
+    
 
     async def go_to_lobe(self,player_name:str = "server"):
+
+        self.is_start = False
+        self.players_rede = {}
         print("enter_lobe")
         response = self.game_info()
         # if server send players to lobe
+        # for mod public and private
         if player_name == "server": 
             await self.players_broadcast_message(player_name,response,"enter_lobe")
-            return 0
+        else:
         # if player enter lobe
-        player_info = self.player_to_json(player_name)
+            player_info = self.player_to_json(player_name)
+            await self.player_privet_message(player_name,response,"enter_lobe")
+            await self.players_broadcast_message(player_name,player_info,"new_connected")
         
-        await self.player_privet_message(player_name,response,"enter_lobe")
-        await self.players_broadcast_message(player_name,player_info,"new_connected")
-        
-        # TODO: start game in beater way
-        if self.number_of_players == len(self.players):
-            await self.start()
 
  
 # ===========================================================
@@ -176,6 +201,11 @@ class Game:
 
 
     async def start(self):
+        # check if game start already
+        if self.is_start:
+            return
+        
+        self.is_start = True
 
         print("start game")
         # game start settings
@@ -244,6 +274,12 @@ class Game:
         elif data == "click":
             await self.player_click(player_name)
             await self.get_players_position()
+
+        elif data == "rede":
+            await self.player_rede(player_name)
+
+        elif data == "not rede":
+            await self.player_not_rede(player_name)
 
         elif data == "disconnect":
             print(player_name,"disconnected")
