@@ -329,7 +329,7 @@ class Game:
         elif rotation_type == "rotation to left":
             angle = player.angle - player.rotation_speed
 
-        player.angle = angle % (2 * math.pi)
+        player.angle = (angle + math.pi) % (2 * math.pi) - math.pi
 
 
 

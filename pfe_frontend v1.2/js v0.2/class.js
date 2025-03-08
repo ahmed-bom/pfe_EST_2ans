@@ -387,14 +387,13 @@ class Game {
       const distance = Math.sqrt(dx * dx + dy * dy);
       let angleToKey = Math.atan2(dx, dy);
 
-      if (angleToKey < 0) angleToKey += 2 * Math.PI;
+      if (angleToKey <= 0) angleToKey += 2 * Math.PI;
       // Determine relative angle and normalize it
       let relativeAngle = angleToKey - player.angle;
       // Check if player is within FOV
       const FOV = this.player_view_angle;
 
       if (Math.abs(relativeAngle) > FOV / 2) continue;
-      
 
       const screenX = (0.5 + relativeAngle / FOV) * canvas.width;
       // Calculate wall height
@@ -467,10 +466,8 @@ class Game {
       const distance = Math.sqrt(dx * dx + dy * dy);
       let angleToPlayer = Math.atan2(dx, dy);
 
-      if (angleToPlayer < 0) angleToPlayer += 2 * Math.PI;
       // Determine relative angle and normalize it
       let relativeAngle = angleToPlayer - player.angle;
-
       // Check if player is within FOV
       const FOV = this.player_view_angle;
       if (Math.abs(relativeAngle) > FOV / 2) continue;
