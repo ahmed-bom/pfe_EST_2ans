@@ -240,3 +240,9 @@ input:focus {
     width: 50%;
   }
 }
+#game_id {
+  position: absolute;
+  z-index: 2;
+  top: 2%;
+  right: 88%;
+}

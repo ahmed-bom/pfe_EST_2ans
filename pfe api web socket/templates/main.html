@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/main.css')}}">
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div id="chat">
+      <div id="messages">
+
+      </div>
+      <div id="input">
+        <input type="text" id="input_text" />
+        <button id="send">Send</button>
+      </div>
+    </div>
+    <div id="info"></div>
+    <button id="rede">
+      rede 
+    </button>
+    <h4 id="g_id">game id : <span id="game_id">{{game_id}}</span></h4>
+    <span id="player_name">{{player_name}}</span>
+    <span id="game_type">{{game_type}}</span>
+
+</body>
+<script src="{{ url_for('static', path='js/globle_var.js')}}"></script>
+<script src="{{ url_for('static', path='js/class.js')}}"></script>
+<script src="{{ url_for('static', path='js/function.js')}}"></script>
+<script src="{{ url_for('static', path='js/main.js')}}"></script>
+</html>
+
+
+
+
+
+
+
+
+

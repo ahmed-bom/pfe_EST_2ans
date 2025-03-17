@@ -1,7 +1,8 @@
 // PARAMETERS ==
-const playerName = "player" + Math.floor(Math.random() * 1000);
-const game_id = "test";
-const MOUSE_SENSITIVITY = 0.002;
+ const playerName = document.getElementById("player_name").innerText;
+ const game_id = document.getElementById("game_id").innerText;
+ const game_type = document.getElementById("game_type").innerText;
+
 
 // CANVAS ==
 const cv = document.getElementById("canvas");
@@ -18,36 +19,36 @@ const chat_messages = document.getElementById("messages");
 const chat_input_text = document.getElementById("input_text");
 const send = document.getElementById("send");
 const rede = document.getElementById("rede");
-let ar_you_red = false
+
 
 // TEXTURES ==
 const wallTexture_1 = new Image();
-wallTexture_1.src = "img/wall_2.jpg";
+wallTexture_1.src = "../../static/img/wall_2.jpg";
 const wallTexture_2 = new Image();
-wallTexture_2.src = "img/wall_2d.jpg";
+wallTexture_2.src = "../../static/img/wall_2d.jpg";
 
 const playerTexture_1_Front = new Image();
-playerTexture_1_Front.src = "img/monster.png";
+playerTexture_1_Front.src = "../../static/img/monster.png";
 const playerTexture_1_Back = new Image();
-playerTexture_1_Back.src = "img/monster.png";
+playerTexture_1_Back.src = "../../static/img/monster.png";
 const playerTexture_1 = [playerTexture_1_Front, playerTexture_1_Back];
 
 const playerTexture_2_Front = new Image();
-playerTexture_2_Front.src = "img/player_1.png";
+playerTexture_2_Front.src = "../../static/img/player_1.png";
 const playerTexture_2_Back = new Image();
-playerTexture_2_Back.src = "img/monster.png";
+playerTexture_2_Back.src = "../../static/img/monster.png";
 const playerTexture_2 = [playerTexture_2_Front, playerTexture_2_Back];
 
 const backgroundTexture_1 = new Image();
-backgroundTexture_1.src = "img/sky_night.jpg";
+backgroundTexture_1.src = "../../static/img/sky_night.jpg";
 
 const doorTexture_1 = new Image();
-doorTexture_1.src = "img/old-wooden-door-open.png";
+doorTexture_1.src = "../../static/img/old-wooden-door-open.png";
 const doorTexture_2 = new Image();
-doorTexture_2.src = "img/old-wooden-door.png";
+doorTexture_2.src = "../../static/img/old-wooden-door.png";
 
 const keyTexture = new Image();
-keyTexture.src = "img/key.png";
+keyTexture.src = "../../static/img/key.png";
 
 
 
@@ -67,6 +68,7 @@ background_song.src = "audio/horror-background.mp3";
 // CONTROLS ==
 
 let MOUSE_CONTROLS = false;
+const MOUSE_SENSITIVITY = 0.002;
 let AUDIO_ON = false
 let KEY_CHAT = "KeyH";
 let KEY_CLICK = "KeyK";

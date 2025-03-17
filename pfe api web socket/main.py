@@ -1,16 +1,25 @@
-from fastapi import FastAPI, WebSocket
+from fastapi import FastAPI, WebSocket , Request
 from pydantic import BaseModel
 import uvicorn
 import random
 
 
+from api_game import *
 from typing import Dict
 from game import *
 
 
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+
 
 app = FastAPI()
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+
+templates = Jinja2Templates(directory="templates")
 
 
 #  for CORS
@@ -23,77 +32,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-
-
-
-
-
-forbidden_names = ["server"]
-forbidden_words = ["kill"]
-
-ranked_games: Dict[str, Game] = {}
-ranked_games["f0"] = Game()
-ranked_id = "f0"
-
-private_games: Dict[str, Game] = {}
-private_games["test"] = Game()
-
-public_games: Dict[str, Game] = {}
-public_games["test"] = Game()
-
-
-
-def get_game_id(n:int = 5):
-
-    l = ["0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"]
-    game_id = ""
-    for i in range(n):
-        game_id += random.choice(l) 
-
-    return game_id
-
-def get_game(game_type,game_id):
-
-    if game_type == "public":
-        if game_id in public_games:
-            return public_games[game_id]
-        return 404
-
-    elif game_type == "private":
-        if game_id in private_games:
-            return private_games[game_id]
-        return 404
-    
-    elif game_type == "ranked":
-        return 0
-    
-    return 404
-
-def can_player_enter_the_game(game,player_name):
-
-    # check if player name is valid
-    if len(player_name) > 20 or len(player_name) < 5 or player_name in forbidden_names:
-        print("player name not valid")
-        return 400
-    
-    # check if game start
-    if game.is_start:
-        print("game is start")
-        return 400
-    
-    # check if game is foll
-    if len(game.players) == game.number_of_players:
-        print("game is foll")
-        return 400
-    
-    # check if player is already in game
-    if player_name in game.players:
-        print("player is already in game")
-        return 400 
-    
-    
-    return 200
 
 
 
@@ -111,6 +49,17 @@ async def new_game(type:str = "public",number_of_players : int = DEF_NUMBER_OF_P
 
     return game_id
 
+
+
+
+@app.get("/{game_type}/{game_id}/{player_name}", response_class=HTMLResponse)
+async def read_item(request: Request , game_type :str = 'public', game_id : str = "test",player_name : str = "test"):
+    return templates.TemplateResponse(
+        request=request ,name="main.html",context={"game_id": game_id,
+                                                    "player_name" : player_name,
+                                                    "game_type" : game_type 
+                                                    }
+    )
 
 
 
@@ -156,22 +105,8 @@ async def websocket_endpoint(game_type,game_id:str,player_name:str,websocket: We
         return 500
     
 
-def get_ranked_game():
-    # TODO
-    game = ranked_games[ranked_id]
-    if game.start:
-        game_id = get_game_id()
-        ranked_id = game_id
-        game = Game()
-        ranked_games[game_id] = game
-    return game
     
-        
-
-
-
-
-
+    
 if __name__ == "__main__":
-    uvicorn.run("main:app", host= "127.0.0.1",port= 8080,reload= True)
+    uvicorn.run("main:app", host= "127.0.0.1",port= 8000,reload= True)
     
