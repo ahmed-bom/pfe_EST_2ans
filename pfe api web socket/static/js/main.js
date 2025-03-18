@@ -3,7 +3,7 @@ const game = new Game(ctx, cv, playerName, Textures);
 
 // CONNECT TO SERVER ==
 let ws = connect_to_game(game_type,game_id, playerName);
-console.log(game_type,game_id, playerName)
+//console.log(game_type,game_id, playerName)
 
 // LISTENER ==
 ws.onmessage = function (event) {
@@ -17,6 +17,10 @@ document.onkeydown = function KEY_DOWN(event) {
   switch (event.code) {
     case KEY_MOV:
       ws.send("move");
+      footstep.play();
+      setTimeout(()=>{
+        footstep.pause();
+      },1000)
       break;
 
     case KEY_Right:
@@ -38,6 +42,7 @@ document.onkeydown = function KEY_DOWN(event) {
     case KEY_CLICK:
       if (game.click()) {
         ws.send("click");
+        get_key_audio.play();
       }
       break;
   }
@@ -63,6 +68,8 @@ rede.onclick = function () {
     rede.innerHTML = "not rede";
   }
 };
+
+// MOUSE CONTROLS
 
 cv.addEventListener("click", () => {
   if (MOUSE_CONTROLS) cv.requestPointerLock();

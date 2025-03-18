@@ -10,7 +10,6 @@ function connect_to_game(gameType,gameName, playerName) {
 
 function get_message_from_player(from, message) {
   let color = game.players[from].color;
-  // color = getRandomColor();
 
   chat_messages.innerHTML +=
     "<br><span style='color:" +
@@ -44,6 +43,7 @@ function listener(data) {
     case "enter_lobe":
       console.log("enter_lobe successfully");
       rede.style.display = "block"
+      background_song.pause();
       game.update(data);
       game.render(playerName);
       break;
@@ -65,6 +65,7 @@ function listener(data) {
     case "game_start":
       console.log("game start");
       rede.style.display = "none"
+      background_song.play()
       game.update(data);
       break;
 
@@ -79,7 +80,7 @@ function listener(data) {
       break;
 
     case "get_key":
-      get_message_from_server(data.from + " got a key");
+      get_message_from_server(data.from + " get a key");
       game.player_get_key(data.content);
       break;
 

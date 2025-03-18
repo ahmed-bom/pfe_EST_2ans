@@ -36,12 +36,12 @@ app.add_middleware(
 
 
 
-@app.post("/new_game/{type}")
-async def new_game(type:str = "public",number_of_players : int = DEF_NUMBER_OF_PLAYERS ,number_of_keys : int = DEF_NUMBER_OF_KEYS ,map_dim : int = DEF_MAP_DIM ,lobe : list = DEF_LOBE_MAP):
+@app.get("/new_game/{type}")
+async def new_game(type:str = "public"):
 
     game_id = get_game_id()
-    game =  Game(type,number_of_players,number_of_keys,map_dim,lobe)
-
+    game =  Game()
+    print(game_id)
     if type == "public":
         public_games[game_id] = game
     else:
@@ -60,6 +60,8 @@ async def read_item(request: Request , game_type :str = 'public', game_id : str 
                                                     "game_type" : game_type 
                                                     }
     )
+
+
 
 
 
