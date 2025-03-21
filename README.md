@@ -1,56 +1,53 @@
-# pfe_EST_2ans
-# Projet de gestion de jeu multijoueur utilisant "FastAPI"
+markdown
+# pfe_EST_2ans - Projet de gestion de jeu multijoueur avec FastAPI
 
-## Fonctions de base
+Ce projet implémente un serveur de jeu multijoueur en utilisant FastAPI, offrant des fonctionnalités de base pour la création et la gestion de jeux en temps réel.
 
-1. *Créer un nouveau jeu :*
+## Fonctionnalités de base
 
-     * Chemin : /new_game/{type}
-         * {type} : Le type de jeu, peut être public ou privé.
-     * Méthode : GET
-     * Description : Ce chemin crée une nouvelle partie est renvoie le id du jeu créé.
-    
-     
-2. *Jeux publics :*
+1.  **Créer un nouveau jeu :**
 
-     * Chemin : /public_games
-     * Méthode : GET
-     * Description : renvoie une liste de tous les id de jeux publics et le nombre de joueurs dans chaque jeu.
+    * Chemin : `/new_game/{type}`
+    * Méthode : `GET`
+    * Description : Crée une nouvelle partie et renvoie l'ID du jeu créé.
+    * `{type}` : Le type de jeu, `public` ou `private`.
 
-3. *Voir la page du jeu :*
+2.  **Liste des jeux publics :**
 
-     * Chemin : /{game_type}/{game_id}/{player_name}
-     * Méthode : GET
-     * Description : Ce chemin renvoie une page HTML affichant le jeu, ainsi que ses fichiers JavaScript et CSS associés.
+    * Chemin : `/public_games`
+    * Méthode : `GET`
+    * Description : Renvoie une liste des IDs de jeux publics et le nombre de joueurs dans chaque jeu.
 
-4. *Connexion WebSocket :*
+3.  **Page de jeu :**
 
-     * Chemin : /ws/{type_de_jeu}/{id_de_jeu}/{nom_du_joueur}
-     * Description : Ce chemin fournit une connexion WebSocket pour mettre à jour instantanément l'état du jeu entre les joueurs.
-     
-        
+    * Chemin : `/{game_type}/{game_id}/{player_name}`
+    * Méthode : `GET`
+    * Description : Renvoie une page HTML affichant le jeu, avec les fichiers JavaScript et CSS associés.
 
-## Structures de données WebSocket ( API => user )
+4.  **Connexion WebSocket :**
 
-*Structures général :*
+    * Chemin : `/ws/{game_type}/{game_id}/{player_name}`
+    * Description : Fournit une connexion WebSocket pour la mise à jour en temps réel de l'état du jeu entre les joueurs.
 
-    json
-    {
-      "type": "type",
-      "from": "from_name",
-      "content": "content"
-    }
-    
- * type : Type de message.
- * from : Nom de l'expéditeur.
- * content : Le contenu du message.
- 
- Voici des exemples de structures de données échangées via WebSocket:
- 
- 
-  1. *Message texte :*
-     * Il est envoyé pour échanger des messages entre les joueurs dans le chat
+## Structures de données WebSocket (API vers utilisateur)
 
+### Structure générale des messages
+
+json
+{
+  "type": "type",
+  "from": "from_name",
+  "content": "content"
+}
+
+
+* `type` : Type de message.
+* `from` : Nom de l'expéditeur.
+* `content` : Contenu du message.
+
+### Exemples de structures de données WebSocket
+
+1.  **Message texte (chat) :**
 
     json
     {
@@ -59,21 +56,14 @@
       "content": "message content"
     }
     
-    
-    
 
-2. *Connexion réussie :*
-    * Envoyé lorsque le joueur se connecte avec succès et contient des informations sur:
-        la carte "map"
-        des informations sur les joueur "players_info"
-        des informations sur les clés "keys"
+2.  **Connexion réussie (`enter_lobe`) :**
 
     json
     {
       "from": "server",
       "type": "enter_lobe",
       "content": {
-      // lobi map
         "map": [
           [1, 1, 1, 1, 1, 1, 1],
           [1, 0, 0, 0, 0, 0, 1],
@@ -89,7 +79,7 @@
             "x": 1.5,
             "y": 1.5,
             "angle": 0
-          }
+          },
           "player47": {
             "type": "NULL",
             "x": 1.5,
@@ -102,10 +92,7 @@
     }
     
 
- 
-
-3. *Connexion du nouveau joueur :*
-    * Il est envoyé lorsqu'un nouveau joueur se connecte et contient les informations du nouveau joueur.
+3.  **Nouveau joueur connecté (`new_connected`) :**
 
     json
     {
@@ -120,10 +107,7 @@
     }
     
 
- 
-
-4. *Postes des joueurs :*
-    * Il est envoyé pour mettre à jour les emplacements des joueurs.
+4.  **Positions des joueurs (`players_position`) :**
 
     json
     {
@@ -135,7 +119,7 @@
           "x": 1.5,
           "y": 1.5,
           "angle": 0
-        }
+        },
         "player139": {
           "type": "NULL",
           "x": 2.0,
@@ -146,9 +130,7 @@
     }
     
 
-   
-5. *Démarrer le jeu :*
-     * Envoyé au démarrage du jeu, contient des informations sur la carte, des informations sur le joueur et des clés.
+5.  **Démarrage du jeu (`game_start`) :**
 
     json
     {
@@ -183,22 +165,15 @@
           }
         },
         "keys": {
-          "77": [7, 7]
-          "47": [4, 7]
+          "77": [7, 7],
+          "47": [4, 7],
           "12": [1, 2]
         }
       }
     }
     
 
- 
-
-
-6. *tué Joueur :*
-    * Envoyé lorsqu'un autre joueur est tué.
-        from  = le tueur
-        content = la victime
-
+6.  **Joueur tué (`kill`) :**
 
     json
     {
@@ -208,10 +183,7 @@
     }
     
 
- 7. *Obtenez une clé :*
-    * Envoyé lorsqu'un joueur obtient une clé.
-        (x,y) représente les coordonnées de clé
-
+7.  **Clé obtenue (`get_key`) :**
 
     json
     {
@@ -224,48 +196,35 @@
     }
     
 
+## Utilisation
 
+Vous pouvez utiliser l'API de deux manières :
 
-## Comment utiliser
+### Avec Python et pip
 
-# vous pouvez utiliser l'API de deux maniéres :
-    soit on utilison Python et pip
-    ou on utilison UV
-    
-# PYTHON
-1. *L'installation des requirements:*
+1.  **Installation des dépendances :**
 
- frapper
- pip install -r requirements.txt
-
-
-2. *Exécutez l'application :*
-
- frapper
- python main.py
- 
-# UV
-1. *L'installation des requirements:*
-
- frapper
- uv add requirements.txt
-
-
-2. *Exécutez l'application :*
-
- frapper
- uv run main.py
- 
- 
- 
- 
- 
- 
-
-
-
-
+    bash
+    pip install -r requirements.txt
     
 
-  
+2.  **Exécution de l'application :**
+
+    bash
+    python main.py
+    
+
+### Avec uv
+
+1.  **Installation des dépendances :**
+
+    bash
+    uv add requirements.txt
+    
+
+2.  **Exécution de l'application :**
+
+    bash
+    uv run main.py
+    ```
 
