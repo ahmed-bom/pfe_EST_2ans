@@ -34,11 +34,13 @@ Ce projet implémente un serveur de jeu multijoueur en utilisant FastAPI, offran
 ### Structure générale des messages
 
 json
+```
 {
   "type": "type",
   "from": "from_name",
   "content": "content"
 }
+```
 
 
 * `type` : Type de message.
@@ -49,151 +51,162 @@ json
 
 1.  **Message texte (chat) :**
 
-    json
-    {
-      "type": "message",
-      "from": "name",
-      "content": "message content"
-    }
+json
+```
+{
+  "type": "message",
+  "from": "name",
+  "content": "message content"
+}
+```
     
 
 2.  **Connexion réussie (`enter_lobe`) :**
 
-    json
-    {
-      "from": "server",
-      "type": "enter_lobe",
-      "content": {
-        "map": [
-          [1, 1, 1, 1, 1, 1, 1],
-          [1, 0, 0, 0, 0, 0, 1],
-          [1, 0, 0, 0, 0, 0, 1],
-          [1, 0, 0, 1, 0, 0, 1],
-          [1, 0, 0, 0, 0, 0, 1],
-          [1, 0, 0, 0, 0, 0, 1],
-          [1, 1, 1, 1, 1, 1, 1]
-        ],
-        "players_info": {
-          "player247": {
-            "type": "NULL",
-            "x": 1.5,
-            "y": 1.5,
-            "angle": 0
-          },
-          "player47": {
-            "type": "NULL",
-            "x": 1.5,
-            "y": 1.5,
-            "angle": 0
-          }
-        },
-        "keys": {}
-      }
-    }
-    
-
-3.  **Nouveau joueur connecté (`new_connected`) :**
-
-    json
-    {
-      "from": "player428",
-      "type": "new_connected",
-      "content": {
+json
+```
+{
+  "from": "server",
+  "type": "enter_lobe",
+  "content": {
+    "map": [
+      [1, 1, 1, 1, 1, 1, 1],
+      [1, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 1, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 1],
+      [1, 0, 0, 0, 0, 0, 1],
+      [1, 1, 1, 1, 1, 1, 1]
+    ],
+    "players_info": {
+      "player247": {
+        "type": "NULL",
+        "x": 1.5,
+        "y": 1.5,
+        "angle": 0
+      },
+      "player47": {
         "type": "NULL",
         "x": 1.5,
         "y": 1.5,
         "angle": 0
       }
-    }
+    },
+    "keys": {}
+  }
+}
+```
+
+3.  **Nouveau joueur connecté (`new_connected`) :**
+
+json
+```
+{
+  "from": "player428",
+  "type": "new_connected",
+  "content": {
+    "type": "NULL",
+    "x": 1.5,
+    "y": 1.5,
+    "angle": 0
+  }
+}
+```
     
 
 4.  **Positions des joueurs (`players_position`) :**
 
-    json
-    {
-      "from": "server",
-      "type": "players_position",
-      "content": {
-        "player598": {
-          "type": "NULL",
-          "x": 1.5,
-          "y": 1.5,
-          "angle": 0
-        },
-        "player139": {
-          "type": "NULL",
-          "x": 2.0,
-          "y": 5.5,
-          "angle": 0
-        }
-      }
+json
+```
+{
+  "from": "server",
+  "type": "players_position",
+  "content": {
+    "player598": {
+      "type": "NULL",
+      "x": 1.5,
+      "y": 1.5,
+      "angle": 0
+    },
+    "player139": {
+      "type": "NULL",
+      "x": 2.0,
+      "y": 5.5,
+      "angle": 0
     }
-    
+  }
+}
+```
 
 5.  **Démarrage du jeu (`game_start`) :**
 
-    json
-    {
-      "from": "server",
-      "type": "game_start",
-      "content": {
-        "map": [
-          [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-          [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-          [1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1],
-          [1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1],
-          [1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1],
-          [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1],
-          [1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1],
-          [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
-          [1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1],
-          [1, 2, 0, 0, 1, 2, 0, 0, 0, 0, 1],
-          [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-        ],
-        "players_info": {
-          "player247": {
-            "type": "prey",
-            "x": 5.5,
-            "y": 9.5,
-            "angle": 0
-          },
-          "player428": {
-            "type": "hunter",
-            "x": 1.5,
-            "y": 9.5,
-            "angle": 0
-          }
-        },
-        "keys": {
-          "77": [7, 7],
-          "47": [4, 7],
-          "12": [1, 2]
-        }
+json
+```
+{
+  "from": "server",
+  "type": "game_start",
+  "content": {
+    "map": [
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1],
+      [1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1],
+      [1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1],
+      [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+      [1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1],
+      [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+      [1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1],
+      [1, 2, 0, 0, 1, 2, 0, 0, 0, 0, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    ],
+    "players_info": {
+      "player247": {
+        "type": "prey",
+        "x": 5.5,
+        "y": 9.5,
+        "angle": 0
+      },
+      "player428": {
+        "type": "hunter",
+        "x": 1.5,
+        "y": 9.5,
+        "angle": 0
       }
+    },
+    "keys": {
+      "77": [7, 7],
+      "47": [4, 7],
+      "12": [1, 2]
     }
-    
+  }
+}
+```
 
 6.  **Joueur tué (`kill`) :**
 
-    json
-    {
-      "type": "kill",
-      "from": "player433",
-      "content": "player200"
-    }
+json
+```
+{
+  "type": "kill",
+  "from": "player433",
+  "content": "player200"
+}
+```
     
 
 7.  **Clé obtenue (`get_key`) :**
 
-    json
-    {
-      "type": "get_key",
-      "from": "player454",
-      "content": {
-        "x": 1,
-        "y": 5
-      }
-    }
+json
+```
+{
+  "type": "get_key",
+  "from": "player454",
+  "content": {
+    "x": 1,
+    "y": 5
+  }
+}
+```
     
 
 ## Utilisation
@@ -205,13 +218,17 @@ Vous pouvez utiliser l'API de deux manières :
 1.  **Installation des dépendances :**
 
     bash
+    ```
     pip install -r requirements.txt
+    ```
     
 
 2.  **Exécution de l'application :**
 
     bash
+    ```
     python main.py
+    ```
     
 
 ### Avec uv
@@ -219,12 +236,15 @@ Vous pouvez utiliser l'API de deux manières :
 1.  **Installation des dépendances :**
 
     bash
+    ```
     uv add requirements.txt
+    ```
     
 
 2.  **Exécution de l'application :**
 
     bash
+    ```
     uv run main.py
     ```
 
