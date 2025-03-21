@@ -21,8 +21,8 @@ function get_message_from_player(from, message) {
     "</h3><br>";
 }
 
-function get_message_from_server(message) {
-  info.innerHTML = "<h1>" + message + "</h1>";
+function get_message_from_server(message,color = "wheat") {
+  info.innerHTML = "<h1 style='color: "+color+";'>" + message + "</h1>";
   setTimeout(() => {
     info.innerHTML = "";
   }, 6000);
@@ -70,17 +70,17 @@ function listener(data) {
       break;
 
     case "win":
-      get_message_from_server(data.content + " won");
+      get_message_from_server(data.content + " won","green");
       game.player_win(data.content);
       break;
 
     case "kill":
-      get_message_from_server(data.from + " killed " + data.content);
+      get_message_from_server(data.content + " is daed " , "red");
       game.player_get_killed(data.content);
       break;
 
     case "get_key":
-      get_message_from_server(data.from + " get a key");
+      get_message_from_server(data.from + " get a key","green");
       game.player_get_key(data.content);
       break;
 

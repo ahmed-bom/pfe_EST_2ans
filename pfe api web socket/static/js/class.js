@@ -78,7 +78,7 @@ class Game {
       delete this.players[p_name];
     }
     if (this.player_name_render == p_name) {
-      this.spectate(p_name);
+      this.spectate();
       return 0;
     }
   }
@@ -88,14 +88,13 @@ class Game {
       delete this.players[p_name];
     }
     if (this.player_name_render == p_name) {
-      this.spectate(p_name);
+      this.spectate();
       return 0;
     }
   }
 
-  spectate(p_name) {
-    // console.log(this.player_name_render, p_name);
-    if (this.player_name_render != p_name) return 0;
+  spectate() {
+    spec.style.display = "block"
     for (let p in this.players) {
       if (this.players[p].type == "prey") {
         this.player_name_render = p;
@@ -472,12 +471,14 @@ class Game {
       const dx = otherPlayer.x - player.x;
       const dy = otherPlayer.y - player.y;
       const distance = Math.sqrt(dx * dx + dy * dy);
-      let angleToPlayer = Math.atan2(dx, dy);
+      const at2 = Math.atan2(dx, dy)
+      let angleToPlayer = at2 == - Math.PI ? Math.PI : at2;
 
       // Determine relative angle and normalize it
       let relativeAngle = angleToPlayer - player.angle;
       // Check if player is within FOV
       const FOV = this.player_view_angle;
+      console.log(player.angle , angleToPlayer);
       if (Math.abs(relativeAngle) > FOV / 2) continue;
 
       const screenX = (0.5 + relativeAngle / FOV) * canvas.width;

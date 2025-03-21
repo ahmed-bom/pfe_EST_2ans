@@ -19,6 +19,9 @@ const chat_messages = document.getElementById("messages");
 const chat_input_text = document.getElementById("input_text");
 const send = document.getElementById("send");
 const rede = document.getElementById("rede");
+const spec = document.getElementById("spec");
+spec.style.display = "none"
+
 
 
 // TEXTURES ==

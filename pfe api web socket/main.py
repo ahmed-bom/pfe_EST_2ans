@@ -41,13 +41,23 @@ async def new_game(type:str = "public"):
 
     game_id = get_game_id()
     game =  Game()
-    print(game_id)
+
     if type == "public":
         public_games[game_id] = game
     else:
         private_games[game_id] = game
 
     return game_id
+
+
+
+
+@app.get("/public_game")
+async def new_game():
+    games = {}
+    for id in public_games :
+        games[id] = len( public_games[id].players)
+    return games
 
 
 
@@ -68,7 +78,7 @@ async def read_item(request: Request , game_type :str = 'public', game_id : str 
 @app.websocket("/ws/{game_type}/{game_id}/{player_name}")
 async def websocket_endpoint(game_type,game_id:str,player_name:str,websocket: WebSocket):
     
-    print(game_type,game_id)
+
     game = get_game(game_type,game_id)
     print(game)
     # check if game exists

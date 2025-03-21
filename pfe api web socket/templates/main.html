@@ -25,11 +25,113 @@
     <span id="player_name">{{player_name}}</span>
     <span id="game_type">{{game_type}}</span>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <!-- spec str-->
+
+    <div id="spec">
+      <div class="spectator-container">
+   
+        <div class="game-view"></div>
+        
+       
+        <div class="broken-overlay" id="brokenOverlay"></div>
+        <div class="static-effect"></div>
+        <div class="vignette"></div>
+        <div class="dirty-lens" id="dirtyLens"></div>
+        
+      
+        <div class="recording-indicator">
+          <div class="rec-dot"></div>
+          <div class="rec-text">REC</div>
+        </div>
+        
+        <div class="spectator-text">SPECTATING</div>
+        
+        <div class="camera-ui">
+          <div class="battery-indicator">
+            <div class="battery-icon">
+              <div class="battery-level"></div>
+            </div>
+            <span>29%</span>
+          </div>
+          
+          <div class="recording-time" id="recordingTime">00:13:47</div>
+          
+          <div class="date-time">
+            <div id="currentDate">03/02/2025</div>
+            <div id="currentTime">23:17:05</div>
+          </div>
+          
+          <div class="camera-mode">NIGHT VISION - AUTO</div>
+             
+         
+          <div class="camera-settings">
+            <div>ISO: 1600</div>
+            <div>f/2.8</div>
+            <div>1/30s</div>
+          </div>
+          
+          
+          <div class="timecode">
+            <span>TC:</span>
+            <span class="timecode-text" id="timecodeDisplay">01:23:47:18</span>
+          </div>
+        </div>
+        
+        
+        <div class="controls">
+          <div class="arrow-button" id="leftButton">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M15 18l-6-6 6-6" stroke="#ff0000" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="player-name">{{player_name}}</div>
+          <div class="arrow-button" id="rightButton">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9 18l6-6-6-6" stroke="#ff0000" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- spec end-->
+
+
+
+
+
+
+
+
+
+
+
+
 </body>
 <script src="{{ url_for('static', path='js/globle_var.js')}}"></script>
 <script src="{{ url_for('static', path='js/class.js')}}"></script>
 <script src="{{ url_for('static', path='js/function.js')}}"></script>
 <script src="{{ url_for('static', path='js/main.js')}}"></script>
+<script src="{{ url_for('static', path='js/spec.js')}}"></script>
 </html>
 
 
