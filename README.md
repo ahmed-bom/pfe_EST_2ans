@@ -207,7 +207,17 @@ json
   }
 }
 ```
-    
+
+8. **Ban user**
+
+json
+```
+{
+  "type": "ban",
+  "from": "server",
+  "content": url
+}
+```
 
 ## Utilisation
 

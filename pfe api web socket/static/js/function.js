@@ -40,6 +40,10 @@ function getRandomColor() {
 
 function listener(data) {
   switch (data.type) {
+    case "ban":
+      console.log("yor ban")
+      window.location.href = data.content
+      
     case "enter_lobe":
       console.log("enter_lobe successfully");
       rede.style.display = "block"
