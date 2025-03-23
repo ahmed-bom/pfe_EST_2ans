@@ -1,6 +1,7 @@
 from fastapi import FastAPI, WebSocket , Request
 from pydantic import BaseModel
 import uvicorn
+import requests
 import random
 
 
@@ -72,6 +73,10 @@ async def read_item(request: Request , game_type :str = 'public', game_id : str 
     )
 
 
+@app.get('/test_ban/{player_name}')
+async def test_ban(player_name:str):
+    print(player_name)
+    return {"test" : "ok"}
 
 
 
@@ -94,6 +99,8 @@ async def websocket_endpoint(game_type,game_id:str,player_name:str,websocket: We
     # open connection and create player
     await websocket.accept()
     await game.new_player(player_name,websocket)
+    ban_api_url = "http://127.0.0.1:8080/ban/" + player_name
+    forbidden_words_count = 0
     
     try:
         while True:
@@ -103,7 +110,19 @@ async def websocket_endpoint(game_type,game_id:str,player_name:str,websocket: We
             if data[0] == "/":
                 data = data[1:] 
                 for word in forbidden_words:
-                    data = data.replace(word,"******")
+                    if word in data:
+                        forbidden_words_count += 1
+                        data = data.replace(word,"******")
+                        if forbidden_words_count == 4 :
+                            print(ban_api_url)
+                            x = requests.get(ban_api_url)
+                            if response.status_code == 200:
+                                print("Success!")
+                            elif response.status_code == 404:
+                                print("Not Found.")
+
+                        
+
 
                 await game.players_broadcast_message(player_name,data)
 

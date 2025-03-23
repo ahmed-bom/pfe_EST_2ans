@@ -323,7 +323,6 @@ class Game {
       this.ctx.drawImage(backgroundTexture, sx, 0, cv.width, cv.height / 2);
       this.ctx.drawImage(backgroundTexture, sx + cv.width, 0,cv.width, cv.height / 2);
     } else {
-      console.log("test")
       this.ctx.fillStyle = "#4a5a6a";
       this.ctx.fillRect(0, 0, this.cv.width, this.cv.height / 2);
     }
@@ -392,11 +391,14 @@ class Game {
       const dx = mapX + 0.5 - player.x;
       const dy = mapY + 0.5 - player.y;
       const distance = Math.sqrt(dx * dx + dy * dy);
-      let angleToKey = Math.atan2(dx, dy);
+      const at2 = Math.atan2(dx, dy);
 
       if (angleToKey <= 0) angleToKey += 2 * Math.PI;
+      const angleToKey = at2 == - Math.PI ? Math.PI : at2;
+      const playerangle = player.angle == - Math.PI ? Math.PI : player.angle;
+
       // Determine relative angle and normalize it
-      let relativeAngle = angleToKey - player.angle;
+      let relativeAngle = angleToKey - playerangle;
       // Check if player is within FOV
       const FOV = this.player_view_angle;
 
@@ -428,7 +430,7 @@ class Game {
           const columnDistance =
             distance *
             Math.cos(
-              player.angle + (sx / canvas.width - 0.5) * FOV - angleToKey
+              playerangle + (sx / canvas.width - 0.5) * FOV - angleToKey
             );
 
           if (columnDistance < wallDistances[sx]) {
@@ -474,8 +476,8 @@ class Game {
       const at2 = Math.atan2(dx, dy)
 
       const angleToPlayer = at2 == - Math.PI ? Math.PI : at2;
-      const playerangle =  player.angle;
-      console.log(playerangle , angleToPlayer);
+      const playerangle =  player.angle == - Math.PI ? Math.PI : player.angle;
+
 
       // Determine relative angle and normalize it
       let relativeAngle = angleToPlayer - playerangle;
