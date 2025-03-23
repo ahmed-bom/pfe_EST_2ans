@@ -43,7 +43,8 @@ function listener(data) {
     case "enter_lobe":
       console.log("enter_lobe successfully");
       rede.style.display = "block"
-      background_song.pause();
+      spec.style.display = "none"
+      //background_song.pause();
       game.update(data);
       game.render(playerName);
       break;
@@ -65,7 +66,7 @@ function listener(data) {
     case "game_start":
       console.log("game start");
       rede.style.display = "none"
-      background_song.play()
+      //background_song.play()
       game.update(data);
       break;
 

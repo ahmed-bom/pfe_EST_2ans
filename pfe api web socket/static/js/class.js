@@ -472,13 +472,15 @@ class Game {
       const dy = otherPlayer.y - player.y;
       const distance = Math.sqrt(dx * dx + dy * dy);
       const at2 = Math.atan2(dx, dy)
-      let angleToPlayer = at2 == - Math.PI ? Math.PI : at2;
+
+      const angleToPlayer = at2 == - Math.PI ? Math.PI : at2;
+      const playerangle =  player.angle;
+      console.log(playerangle , angleToPlayer);
 
       // Determine relative angle and normalize it
-      let relativeAngle = angleToPlayer - player.angle;
+      let relativeAngle = angleToPlayer - playerangle;
       // Check if player is within FOV
       const FOV = this.player_view_angle;
-      console.log(player.angle , angleToPlayer);
       if (Math.abs(relativeAngle) > FOV / 2) continue;
 
       const screenX = (0.5 + relativeAngle / FOV) * canvas.width;
@@ -518,7 +520,7 @@ class Game {
           const columnDistance =
             distance *
             Math.cos(
-              player.angle + (sx / canvas.width - 0.5) * FOV - angleToPlayer
+              playerangle + (sx / canvas.width - 0.5) * FOV - angleToPlayer
             );
 
           if (columnDistance < wallDistances[sx]) {
