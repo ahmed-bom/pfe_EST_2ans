@@ -391,9 +391,8 @@ class Game {
       const dx = mapX + 0.5 - player.x;
       const dy = mapY + 0.5 - player.y;
       const distance = Math.sqrt(dx * dx + dy * dy);
-      const at2 = Math.atan2(dx, dy);
 
-      if (angleToKey <= 0) angleToKey += 2 * Math.PI;
+      const at2 = Math.atan2(dx, dy);
       const angleToKey = at2 == - Math.PI ? Math.PI : at2;
       const playerangle = player.angle == - Math.PI ? Math.PI : player.angle;
 
@@ -467,15 +466,14 @@ class Game {
       const mapX = Math.floor(otherPlayer.x);
       const mapY = Math.floor(otherPlayer.y);
 
-      // Skip if player is in a wall or outside map bounds
       if (!map[mapY] || map[mapY][mapX] !== 0) continue;
 
       const dx = otherPlayer.x - player.x;
       const dy = otherPlayer.y - player.y;
       const distance = Math.sqrt(dx * dx + dy * dy);
-      const at2 = Math.atan2(dx, dy)
+      const at23 = Math.atan2(dx, dy)
 
-      const angleToPlayer = at2 == - Math.PI ? Math.PI : at2;
+      const angleToPlayer = at23 == - Math.PI ? Math.PI : at23;
       const playerangle =  player.angle == - Math.PI ? Math.PI : player.angle;
 
 
