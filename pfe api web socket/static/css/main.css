@@ -188,6 +188,16 @@
     transform: translate(-50%, 0);
     color: white;
   }
+
+
+  #keys_Counter{
+    position: absolute;
+    z-index: 1;
+    top: 2%;
+    right: 2%;
+    margin: 10px;
+    color: white;
+  }
   
   #rede {
     position: absolute;

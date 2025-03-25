@@ -67,6 +67,7 @@ class Game {
         Math.floor(h.y) == Math.floor(p.y)
       ) {
         delete this.players[p_name];
+        knife_stab.play();
         return true;
       }
     }
@@ -95,9 +96,13 @@ class Game {
 
   spectate() {
     spec.style.display = "block"
+    console.log("spectate")
     for (let p in this.players) {
+      console.log(p)
+      if(this.player_name_render = p)continue;
       if (this.players[p].type == "prey") {
         this.player_name_render = p;
+        console.log(this.player_name_render )
         return 0;
       }
     }
@@ -110,6 +115,7 @@ class Game {
     if (key in this.keys) {
       delete this.keys[key];
       this.key_number--;
+      get_key_audio.play();
       return true;
     }
     return false;
@@ -391,8 +397,8 @@ class Game {
       const dx = mapX + 0.5 - player.x;
       const dy = mapY + 0.5 - player.y;
       const distance = Math.sqrt(dx * dx + dy * dy);
-
       const at2 = Math.atan2(dx, dy);
+      
       const angleToKey = at2 == - Math.PI ? Math.PI : at2;
       const playerangle = player.angle == - Math.PI ? Math.PI : player.angle;
 
@@ -466,11 +472,13 @@ class Game {
       const mapX = Math.floor(otherPlayer.x);
       const mapY = Math.floor(otherPlayer.y);
 
+      // Skip if player is in a wall or outside map bounds
       if (!map[mapY] || map[mapY][mapX] !== 0) continue;
 
       const dx = otherPlayer.x - player.x;
       const dy = otherPlayer.y - player.y;
       const distance = Math.sqrt(dx * dx + dy * dy);
+
       const at23 = Math.atan2(dx, dy)
 
       const angleToPlayer = at23 == - Math.PI ? Math.PI : at23;
@@ -565,6 +573,10 @@ class Game {
 
     this.draw_keys(wallDistances);
     this.draw_Players(wallDistances);
+    if (this.players[this.player_name_render].type == "prey"){
+      this.ctx.drawImage(hand_img,this.cv.width/4,this.cv.height/2,this.cv.width/2, this.cv.height/2);
+    }
+
 
     this.droit();
     setTimeout(() => {

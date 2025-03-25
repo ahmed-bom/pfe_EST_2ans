@@ -42,7 +42,7 @@ document.onkeydown = function KEY_DOWN(event) {
     case KEY_CLICK:
       if (game.click()) {
         ws.send("click");
-        get_key_audio.play();
+        keys_Counter.innerHTML = ( key_number_of_game - game.key_number) + "/" + key_number_of_game
       }
       break;
   }

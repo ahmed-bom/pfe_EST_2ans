@@ -5,6 +5,10 @@ function connect_to_game(gameType,gameName, playerName) {
     origin + "/ws/" + gameType + "/" + gameName + "/" + playerName
   );
 
+  ws.onerror = function (event){
+    //window.location.href = "/"
+  }
+
   return ws;
 }
 
@@ -46,6 +50,7 @@ function listener(data) {
       
     case "enter_lobe":
       console.log("enter_lobe successfully");
+      keys_Counter.innerHTML = ""
       rede.style.display = "block"
       spec.style.display = "none"
       //background_song.pause();
@@ -72,21 +77,27 @@ function listener(data) {
       rede.style.display = "none"
       //background_song.play()
       game.update(data);
+      key_number_of_game = game.key_number
+      keys_Counter.innerHTML = "0/" + key_number_of_game
+      console.log("test")
       break;
 
     case "win":
-      get_message_from_server(data.content + " won","green");
+      get_message_from_server(data.content + " won","#ff9216");
       game.player_win(data.content);
       break;
 
     case "kill":
       get_message_from_server(data.content + " is daed " , "red");
+      knife_stab.play();
       game.player_get_killed(data.content);
       break;
 
     case "get_key":
-      get_message_from_server(data.from + " get a key","green");
+      get_message_from_server(data.from + " get a key","#ff9216");
+      get_key_audio.play();
       game.player_get_key(data.content);
+      keys_Counter.innerHTML = ( key_number_of_game - game.key_number) + "/" + key_number_of_game
       break;
 
     case "player_rede":

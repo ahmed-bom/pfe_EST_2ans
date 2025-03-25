@@ -11,6 +11,7 @@ cv.width = window.innerWidth;
 cv.height = window.innerHeight - 4;
 
 // DOM ==
+const keys_Counter = document.getElementById('keys_Counter')
 const info = document.getElementById("info");
 const chat = document.getElementById("chat");
 chat.style.display = "none";
@@ -26,7 +27,11 @@ spec.style.display = "none"
 
 // TEXTURES ==
 
+
 const origin = window.location.origin
+
+const hand_img = new Image();
+hand_img.src = origin + "/static/img/pov.png";
 const wallTexture_1 = new Image();
 wallTexture_1.src = origin + "/static/img/wall_2d.jpg";
 const wallTexture_2 = new Image();
@@ -45,7 +50,7 @@ playerTexture_2_Back.src = origin + "/static/img/player_b.png";
 const playerTexture_2 = [playerTexture_2_Front, playerTexture_2_Back];
 
 const backgroundTexture_1 = new Image();
-backgroundTexture_1.src = origin + "/static/img/Sky_1.jpg";
+backgroundTexture_1.src = origin + "/static/img/Sky_2.jpg";
 
 const doorTexture_1 = new Image();
 doorTexture_1.src = origin + "/static/img/open_door.jpg";
@@ -66,6 +71,9 @@ const Textures = {
 };
 
 // AUDIO ==
+const knife_stab = new Audio()
+knife_stab.src = origin + "/static/audio/knife-stab.mp3";
+
 const background_song = new Audio()
 background_song.src = origin + "/static/audio/horror-background.mp3";
 const footstep = new Audio()
@@ -74,6 +82,9 @@ const get_key_audio = new Audio()
 get_key_audio.src = origin + "/static/audio/key.mp3";
 
 // CONTROLS ==
+
+
+let key_number_of_game = 0
 
 let MOUSE_CONTROLS = true;
 const MOUSE_SENSITIVITY = 0.001;

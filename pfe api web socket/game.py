@@ -27,7 +27,7 @@ class Player:
 # ===================== DEF PARAMETER OF GAME ===============
 # ===========================================================
 
-DEF_NUMBER_OF_PLAYERS = 3
+DEF_NUMBER_OF_PLAYERS = 4
 
 DEF_NUMBER_OF_KEYS = 3
 
@@ -38,7 +38,7 @@ DEF_LOBE_MAP = [[1,1,1,1,1,1,1],
                 [1,0,0,0,0,0,1],
                 [1,0,0,1,0,0,1],
                 [1,0,0,1,0,0,1],
-                [1,0,1,1,0,0,1],
+                [1,0,0,1,0,0,1],
                 [1,0,0,0,0,0,1],
                 [1,1,1,1,1,1,1]] 
 
@@ -220,15 +220,27 @@ class Game:
         self.map = new_map.tolist()
         # generate keys
         self.keys = add_points(new_map,self.number_of_keys)
+
         # set players position in start point
+        directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+        
 
         for p in self.players.values():
             if p.type == "prey":
-                p.x = start[1]+0.5
-                p.y = start[0]+0.5
+                for dx, dy in directions:
+                    nx, ny = start[1] + dx, start[0] + dy
+                    if nx > 0 and ny > 0 and nx < self.map_dim and ny < self.map_dim and self.map[ny][nx] == 0:
+                        p.x = nx +0.5
+                        p.y = ny +0.5
+                        break
             else:
-                p.x = end[1]+0.5
-                p.y = end[0]+0.5
+                for dx, dy in directions:
+                    nx, ny = end[1] + dx, end[0] + dy
+                    if nx > 0 and ny > 0 and nx < self.map_dim and ny < self.map_dim and self.map[ny][nx] == 0:
+                        p.x = nx +0.5
+                        p.y = ny +0.5
+                        break
+
         
         # send start game
         response = self.game_info()
