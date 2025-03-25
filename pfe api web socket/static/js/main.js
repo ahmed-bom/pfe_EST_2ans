@@ -59,13 +59,13 @@ send.onclick = function () {
 };
 
 rede.onclick = function () {
-  if (rede.innerHTML == "not rede"){
+  if (rede.innerHTML == "not ready"){
     ws.send("not rede");
-    rede.innerHTML = "rede";
+    rede.innerHTML = "ready";
   }
   else {
     ws.send("rede");
-    rede.innerHTML = "not rede";
+    rede.innerHTML = "not ready";
   }
 };
 

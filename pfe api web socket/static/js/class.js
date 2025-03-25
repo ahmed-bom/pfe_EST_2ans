@@ -573,9 +573,15 @@ class Game {
 
     this.draw_keys(wallDistances);
     this.draw_Players(wallDistances);
-    if (this.players[this.player_name_render].type == "prey"){
-      this.ctx.drawImage(hand_img,this.cv.width/4,this.cv.height/2,this.cv.width/2, this.cv.height/2);
-    }
+    
+    if (this.players[this.player_name_render].type == "prey") {
+      const handWidth = this.cv.width * 0.6;
+      const handHeight = handWidth * (hand_img.height / hand_img.width);
+      const handX = this.cv.width - handWidth;
+      const handY = this.cv.height - handHeight;
+      
+      this.ctx.drawImage(hand_img, handX, handY, handWidth, handHeight);
+  }
 
 
     this.droit();

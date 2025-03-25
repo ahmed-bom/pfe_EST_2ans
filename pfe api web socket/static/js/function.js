@@ -83,29 +83,29 @@ function listener(data) {
       break;
 
     case "win":
-      get_message_from_server(data.content + " won","#ff9216");
+      get_message_from_server(data.content + " escaped","#ff9216");
       game.player_win(data.content);
       break;
 
     case "kill":
-      get_message_from_server(data.content + " is daed " , "red");
+      get_message_from_server(data.content + " is dead " , "red");
       knife_stab.play();
       game.player_get_killed(data.content);
       break;
 
     case "get_key":
-      get_message_from_server(data.from + " get a key","#ff9216");
+      get_message_from_server(data.from + " got a key","#ff9216");
       get_key_audio.play();
       game.player_get_key(data.content);
       keys_Counter.innerHTML = ( key_number_of_game - game.key_number) + "/" + key_number_of_game
       break;
 
     case "player_rede":
-      get_message_from_server(data.from + " rede");
+      get_message_from_server(data.from + " ready");
       break;
 
     case "player_not_rede":
-      get_message_from_server(data.from + " not rede");
+      get_message_from_server(data.from + " is not ready");
       break;
 
     case "message":
