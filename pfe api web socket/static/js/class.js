@@ -18,6 +18,22 @@ class Game {
     this.players = {};
   }
 
+
+  createWallLightSpot(x, centerX, radius) {
+    // Calculate distance from center of view
+    const distance = Math.abs(x - centerX);
+    
+    // Create a more circular light spot effect with sharper edges
+    let intensity = 1 - Math.pow(distance / radius, 2); // Squared falloff for more circular shape
+    intensity = Math.max(0, intensity); // Clamp to positive values
+    
+    // Make the falloff more pronounced for a spotlight effect
+    // Higher exponent = sharper edge transition
+    intensity = Math.pow(intensity, 3);
+    
+    return intensity;
+}
+
   update(obj) {
     this.player_name_render = this.player_name;
     this.map = {
@@ -388,189 +404,221 @@ class Game {
   draw_keys(wallDistances) {
     const player = this.players[this.player_name_render];
     const map = this.map.array;
-    for (let k in this.keys) {
-      const key = this.keys[k];
-      const mapX = key[1];
-      const mapY = key[0];
-      if (!map[mapY] || map[mapY][mapX] !== 0) continue;
-
-      const dx = mapX + 0.5 - player.x;
-      const dy = mapY + 0.5 - player.y;
+    
+    // Collect and process key sprites
+    const keySprites = Object.entries(this.keys)
+      .filter(([k, key]) => {
+        const mapX = key[1];
+        const mapY = key[0];
+        return map[mapY] && map[mapY][mapX] === 0;
+      })
+      .map(([k, key]) => {
+        const mapX = key[1];
+        const mapY = key[0];
+        const dx = mapX + 0.5 - player.x;
+        const dy = mapY + 0.5 - player.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        const angleToKey = Math.atan2(dx, dy);
+        const normalizedAngleToKey = angleToKey === -Math.PI ? Math.PI : angleToKey;
+        const normalizedPlayerAngle = player.angle === -Math.PI ? Math.PI : player.angle;
+  
+        let relativeAngle = normalizedAngleToKey - normalizedPlayerAngle;
+        
+        return {
+          mapX,
+          mapY,
+          distance,
+          relativeAngle
+        };
+      })
+      .filter(sprite => Math.abs(sprite.relativeAngle) <= this.player_view_angle / 2)
+      .sort((a, b) => b.distance - a.distance);
+  
+    // Render sorted key sprites
+    keySprites.forEach(sprite => {
+      const dx = sprite.mapX + 0.5 - player.x;
+      const dy = sprite.mapY + 0.5 - player.y;
       const distance = Math.sqrt(dx * dx + dy * dy);
-      const at2 = Math.atan2(dx, dy);
       
-      const angleToKey = at2 == - Math.PI ? Math.PI : at2;
-      const playerangle = player.angle == - Math.PI ? Math.PI : player.angle;
-
-      // Determine relative angle and normalize it
-      let relativeAngle = angleToKey - playerangle;
-      // Check if player is within FOV
-      const FOV = this.player_view_angle;
-
-      if (Math.abs(relativeAngle) > FOV / 2) continue;
-
-      const screenX = (0.5 + relativeAngle / FOV) * canvas.width;
-      // Calculate wall height
+      const angleToKey = Math.atan2(dx, dy);
+      const normalizedAngleToKey = angleToKey === -Math.PI ? Math.PI : angleToKey;
+      const normalizedPlayerAngle = player.angle === -Math.PI ? Math.PI : player.angle;
+  
+      let relativeAngle = normalizedAngleToKey - normalizedPlayerAngle;
+      
+      const screenX = (0.5 + relativeAngle / this.player_view_angle) * canvas.width;
       const spriteHeight = ((canvas.height * 0.5) / distance) * 0.4;
-      const spriteWidth = spriteHeight; // Assuming square sprite
+      const spriteWidth = spriteHeight;
       const spriteTop = (canvas.height - spriteHeight) / 2;
-
-      // Calculate sprite screen boundaries
+  
       const leftBound = Math.max(0, Math.floor(screenX - spriteWidth / 2));
       const rightBound = Math.min(
         canvas.width,
         Math.ceil(screenX + spriteWidth / 2)
       );
       const keyTexture = this.Textures.key;
-
+  
       if (keyTexture.complete) {
-        // Draw sprite column by column
         for (let sx = leftBound; sx < rightBound; sx++) {
-          // Calculate texture x-coordinate
-          const textureX =
-            ((sx - (screenX - spriteWidth / 2)) / spriteWidth) *
-            keyTexture.width;
-
-          // Check if this column is behind a wall
-          const columnDistance =
-            distance *
-            Math.cos(
-              playerangle + (sx / canvas.width - 0.5) * FOV - angleToKey
-            );
-
+          const textureX = ((sx - (screenX - spriteWidth / 2)) / spriteWidth) * keyTexture.width;
+  
+          const columnDistance = distance * Math.cos(
+            normalizedPlayerAngle + (sx / canvas.width - 0.5) * this.player_view_angle - normalizedAngleToKey
+          );
+  
           if (columnDistance < wallDistances[sx]) {
             const animationTime = Date.now() * 0.005;
             const floatAmplitude = Math.max(0.05 * (1 - distance / 5), 0);
-            const floatOffset =
-              Math.sin(animationTime + mapX + mapY) * floatAmplitude;
+            const floatOffset = Math.sin(animationTime + sprite.mapX + sprite.mapY) * floatAmplitude;
+            
             ctx.drawImage(
               keyTexture,
-              textureX,
-              0,
-              1,
-              keyTexture.height,
-              sx,
-              spriteTop + floatOffset * canvas.height,
-              1,
+              textureX, 0, 1, keyTexture.height,
+              sx, 
+              spriteTop + floatOffset * canvas.height, 
+              1, 
               spriteHeight
             );
           }
         }
       }
-    }
+    });
   }
+
   draw_Players(wallDistances) {
-    // Player rendering code
-    const player = this.players[this.player_name_render];
-    const map = this.map.array;
+  const player = this.players[this.player_name_render];
+  const map = this.map.array;
 
-    for (let p in this.players) {
-      // Skip current player
-      if (p == this.player_name_render) continue;
-      const otherPlayer = this.players[p];
-
+  // Collect and process player sprites
+  const playerSprites = Object.entries(this.players)
+    .filter(([p, otherPlayer]) => p !== this.player_name_render)
+    .map(([p, otherPlayer]) => {
       const mapX = Math.floor(otherPlayer.x);
       const mapY = Math.floor(otherPlayer.y);
 
       // Skip if player is in a wall or outside map bounds
-      if (!map[mapY] || map[mapY][mapX] !== 0) continue;
+      if (!map[mapY] || map[mapY][mapX] !== 0) return null;
 
       const dx = otherPlayer.x - player.x;
       const dy = otherPlayer.y - player.y;
       const distance = Math.sqrt(dx * dx + dy * dy);
 
-      const at23 = Math.atan2(dx, dy)
+      const angleToPlayer = Math.atan2(dx, dy);
+      const normalizedAngleToPlayer = angleToPlayer === -Math.PI ? Math.PI : angleToPlayer;
+      const normalizedPlayerAngle = player.angle === -Math.PI ? Math.PI : player.angle;
 
-      const angleToPlayer = at23 == - Math.PI ? Math.PI : at23;
-      const playerangle =  player.angle == - Math.PI ? Math.PI : player.angle;
+      let relativeAngle = normalizedAngleToPlayer - normalizedPlayerAngle;
 
+      return {
+        player: otherPlayer,
+        distance,
+        relativeAngle
+      };
+    })
+    .filter(sprite => sprite && Math.abs(sprite.relativeAngle) <= this.player_view_angle / 2)
+    .sort((a, b) => b.distance - a.distance);
 
-      // Determine relative angle and normalize it
-      let relativeAngle = angleToPlayer - playerangle;
-      // Check if player is within FOV
-      const FOV = this.player_view_angle;
-      if (Math.abs(relativeAngle) > FOV / 2) continue;
+  // Render sorted player sprites
+  playerSprites.forEach(({ player: otherPlayer, distance, relativeAngle }) => {
+    const dx = otherPlayer.x - player.x;
+    const dy = otherPlayer.y - player.y;
+    const angleToPlayer = Math.atan2(dx, dy);
+    const normalizedAngleToPlayer = angleToPlayer === -Math.PI ? Math.PI : angleToPlayer;
+    const normalizedPlayerAngle = player.angle === -Math.PI ? Math.PI : player.angle;
 
-      const screenX = (0.5 + relativeAngle / FOV) * canvas.width;
-      // Calculate wall height
-      const spriteHeight = (canvas.height * 0.5) / distance;
-      const spriteWidth = spriteHeight; // Assuming square sprite
-      const spriteTop = (canvas.height - spriteHeight) / 2;
+    const screenX = (0.5 + relativeAngle / this.player_view_angle) * canvas.width;
+    const spriteHeight = (canvas.height * 0.5) / distance;
+    const spriteWidth = spriteHeight;
+    const spriteTop = (canvas.height - spriteHeight) / 2;
 
-      // Calculate sprite screen boundaries
-      const leftBound = Math.max(0, Math.floor(screenX - spriteWidth / 2));
-      const rightBound = Math.min(
-        canvas.width,
-        Math.ceil(screenX + spriteWidth / 2)
-      );
+    const leftBound = Math.max(0, Math.floor(screenX - spriteWidth / 2));
+    const rightBound = Math.min(
+      canvas.width,
+      Math.ceil(screenX + spriteWidth / 2)
+    );
 
-      // Draw sprite
-      const angleDiff =
-        (otherPlayer.angle - angleToPlayer + Math.PI * 2) % (Math.PI * 2);
+    const angleDiff = (otherPlayer.angle - angleToPlayer + Math.PI * 2) % (Math.PI * 2);
+    const side = angleDiff > Math.PI / 2 && angleDiff < (Math.PI * 3) / 2 ? 0 : 1;
 
-      const side =
-        angleDiff > Math.PI / 2 && angleDiff < (Math.PI * 3) / 2 ? 0 : 1;
+    const playerTexture =
+      otherPlayer.type == "hunter"
+        ? this.Textures.players[0][side]
+        : this.Textures.players[1][side];
 
-      const playerTexture =
-        otherPlayer.type == "hunter"
-          ? this.Textures.players[0][side]
-          : this.Textures.players[1][side];
+    if (playerTexture.complete) {
+      for (let sx = leftBound; sx < rightBound; sx++) {
+        const textureX = ((sx - (screenX - spriteWidth / 2)) / spriteWidth) * playerTexture.width;
 
-      if (playerTexture.complete) {
-        // Draw sprite column by column
-        for (let sx = leftBound; sx < rightBound; sx++) {
-          // Calculate texture x-coordinate
-          const textureX =
-            ((sx - (screenX - spriteWidth / 2)) / spriteWidth) *
-            playerTexture.width;
+        const columnDistance = distance * Math.cos(
+          normalizedPlayerAngle + (sx / canvas.width - 0.5) * this.player_view_angle - angleToPlayer
+        );
 
-          // Check if this column is behind a wall
-          const columnDistance =
-            distance *
-            Math.cos(
-              playerangle + (sx / canvas.width - 0.5) * FOV - angleToPlayer
-            );
-
-          if (columnDistance < wallDistances[sx]) {
-            ctx.drawImage(
-              playerTexture,
-              textureX,
-              0,
-              1,
-              playerTexture.height,
-              sx,
-              spriteTop,
-              1,
-              spriteHeight
-            );
-          }
+        if (columnDistance < wallDistances[sx]) {
+          ctx.drawImage(
+            playerTexture,
+            textureX, 0, 1, playerTexture.height,
+            sx, spriteTop, 1, spriteHeight
+          );
         }
       }
     }
-  }
-
+  });
+}
   render() {
     const RAYS = this.cv.width;
     const FOV = this.player_view_angle;
     const playerAngle = this.players[this.player_name_render].angle;
     const wallDistances = new Array(RAYS).fill(Infinity);
-
+  
     this.draw_background(playerAngle);
-
-    // Cast rays
+  
+    const centerX = this.cv.width / 2;
+    const lightRadius = this.cv.width * 0.12;
+  
     for (let x = 0; x < RAYS; x++) {
       const rayAngle = playerAngle + (x / RAYS - 0.5) * FOV;
       const ray = this.castRay(rayAngle, this.player_name_render);
-
+  
       // Remove fisheye effect
-      const correctDistance = ray.distance * Math.cos(rayAngle - playerAngle); //cos
+      const correctDistance = ray.distance * Math.cos(rayAngle - playerAngle);
       wallDistances[x] = correctDistance;
-
-      // Draw wall slice
+  
+      // Draw wall slice with torch light effect
+      const wallHeight = (this.cv.height * 0.5) / correctDistance;
+      const wallTop = (this.cv.height - wallHeight) / 2;
+      const wallBottom = (this.cv.height + wallHeight) / 2;
+  
+      // Calculate base brightness from side and distance
+      let brightness = ray.side === 1 ? 0.7 : 1;
+      brightness = brightness / (1 + correctDistance * 0.1);
+      
+      // Get the light spot intensity for this column
+      const lightIntensity = this.createWallLightSpot(x, centerX, lightRadius);
+      
+      // Add the light spot on top of the regular brightness
+      const spotBrightness = Math.min(brightness + lightIntensity * 0.6, 1.0);
+      
+      this.ctx.globalAlpha = spotBrightness;
+      
+      // Draw wall slice (your existing draw_wal method)
       this.draw_wal(ray.side, ray.wallX, correctDistance, x, ray.door);
+      
+      this.ctx.globalAlpha = 1;
+  
+      if (lightIntensity > 0.05) {
+        const gradientAlpha = lightIntensity * 0.35;
+        this.ctx.fillStyle = `rgba(255, 255, 230, ${gradientAlpha})`;
+        this.ctx.fillRect(x, wallTop, 1, wallBottom - wallTop);
+        
+        // Subtle highlight in the center
+        if (lightIntensity > 0.8) {
+          this.ctx.fillStyle = `rgba(255, 255, 255, ${(lightIntensity - 0.8) * 0.5})`;
+          this.ctx.fillRect(x, wallTop, 1, wallBottom - wallTop);
+        }
+      }
     }
-
-
+  
     this.draw_keys(wallDistances);
     this.draw_Players(wallDistances);
     
@@ -581,9 +629,8 @@ class Game {
       const handY = this.cv.height - handHeight;
       
       this.ctx.drawImage(hand_img, handX, handY, handWidth, handHeight);
-  }
-
-
+    }
+  
     this.droit();
     setTimeout(() => {
       this.render();
