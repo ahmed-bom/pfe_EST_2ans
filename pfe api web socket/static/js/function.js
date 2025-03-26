@@ -6,15 +6,14 @@ function connect_to_game(gameType,gameName, playerName) {
   );
 
   ws.onerror = function (event){
-    //window.location.href = "/"
+    window.location.href = "http://127.0.0.1:8080/lobby"
   }
 
   return ws;
 }
 
 function get_message_from_player(from, message) {
-  let color = game.players[from].color;
-
+  let color = game.players[from] == undefined ? getRandomColor() :game.players[from].color; 
   chat_messages.innerHTML +=
     "<br><span style='color:" +
     color +

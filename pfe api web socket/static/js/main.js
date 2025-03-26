@@ -84,9 +84,11 @@ document.addEventListener("pointerlockchange", () => {
 });
 
 function updateCamera(e) {
-  if (e.movementX > 0) {
-    ws.send("rotation to right");
-  } else {
-    ws.send("rotation to left");
+  if (Math.abs(e.movementX - old_movementX) > MOUSE_SENSITIVITY){
+    if (e.movementX > 0) {
+      ws.send("rotation to right");
+    } else {
+      ws.send("rotation to left");
+    }
   }
 }

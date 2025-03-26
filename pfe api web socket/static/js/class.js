@@ -117,6 +117,7 @@ class Game {
       if(this.player_name_render == p)continue;
       if (this.players[p].type == "prey") {
         this.player_name_render = p;
+        spectat_name.innerHTML = p;
         return 0;
       }
     }
@@ -513,7 +514,7 @@ class Game {
     }
   });
 }
-draw_wal(side, wallX, Distance, x, door) {
+draw_wal(side, wallX, Distance, x, door,player_type) {
   // Calculate wall height
   const wallHeight = (this.cv.height * 0.5) / Distance;
   const wallTop = (this.cv.height - wallHeight) / 2;
@@ -523,22 +524,8 @@ draw_wal(side, wallX, Distance, x, door) {
   const lightRadius = this.cv.width * 0.12;
 
 
+
     
-  // Calculate base brightness from side and distance
-  let brightness = side === 1 ? 0.7 : 1;
-  brightness = brightness / (1 + Distance * 0.1);
-        
-  // Get the light spot intensity for this column
-  const lightIntensity = this.createWallLightSpot(x, centerX, lightRadius);
-  
-        // Add the light spot on top of the regular brightness
-        //const spotBrightness = Math.min(brightness + lightIntensity * 0.6, 1.0);
-        
-        //this.ctx.globalAlpha = spotBrightness;
-        
-
-
-
 
 
 
@@ -587,16 +574,29 @@ draw_wal(side, wallX, Distance, x, door) {
   }
 
 
-  if (lightIntensity > 0.05) {
-    const gradientAlpha = lightIntensity * 0.35;
-    this.ctx.fillStyle = `rgba(255, 255, 230, ${gradientAlpha})`;
-    this.ctx.fillRect(x, wallTop, 1, wallHeight);
-    // Subtle highlight in the center
-    if (lightIntensity > 0.8) {
-      this.ctx.fillStyle = `rgba(255, 255, 255, ${(lightIntensity - 0.8) * 0.5})`;
-      this.ctx.fillRect(x, wallTop, 1, wallHeight);
+
+  if (player_type == "prey" || player_type == "NULL"){
+    // Calculate base brightness from side and distance
+    let brightness = side === 1 ? 0.7 : 1;
+    brightness = brightness / (1 + Distance * 0.1);
+          
+    // Get the light spot intensity for this column
+    const lightIntensity = this.createWallLightSpot(x, centerX, lightRadius);
+
+
+      if (lightIntensity > 0.05) {
+        const gradientAlpha = lightIntensity * 0.35;
+        this.ctx.fillStyle = `rgba(255, 255, 230, ${gradientAlpha})`;
+        this.ctx.fillRect(x, wallTop, 1, wallHeight);
+        // Subtle highlight in the center
+        if (lightIntensity > 0.8) {
+          this.ctx.fillStyle = `rgba(255, 255, 255, ${(lightIntensity - 0.8) * 0.5})`;
+          this.ctx.fillRect(x, wallTop, 1, wallHeight);
+        }
+      }
     }
-  }
+
+
 }
   render() {
     const RAYS = this.cv.width;
@@ -617,7 +617,7 @@ draw_wal(side, wallX, Distance, x, door) {
       const correctDistance = ray.distance * Math.cos(rayAngle - playerAngle);
       wallDistances[x] = correctDistance;
   
-      this.draw_wal(ray.side, ray.wallX, correctDistance, x, ray.door);
+      this.draw_wal(ray.side, ray.wallX, correctDistance, x, ray.door , player_type);
   
     }
   
@@ -633,7 +633,8 @@ draw_wal(side, wallX, Distance, x, door) {
       
       this.ctx.drawImage(hand_img, handX, handY, handWidth, handHeight);
     }
-  
+    
+    this.droit()
     setTimeout(() => {
       this.render();
     }, this.FPS);

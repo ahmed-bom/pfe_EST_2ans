@@ -12,6 +12,7 @@ cv.height = window.innerHeight - 4;
 
 // DOM ==
 const keys_Counter = document.getElementById('keys_Counter')
+const spectat_name = document.getElementById('spectat-name')
 const info = document.getElementById("info");
 const chat = document.getElementById("chat");
 chat.style.display = "none";
@@ -87,7 +88,9 @@ get_key_audio.src = origin + "/static/audio/key.mp3";
 let key_number_of_game = 0
 
 let MOUSE_CONTROLS = true;
-const MOUSE_SENSITIVITY = 0.0005;
+const MOUSE_SENSITIVITY = 10;
+let old_movementX = 0;
+
 let AUDIO_ON = false
 let KEY_CHAT = "KeyH";
 let KEY_CLICK = "KeyK";

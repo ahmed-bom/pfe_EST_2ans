@@ -32,7 +32,7 @@ DEF_NUMBER_OF_PLAYERS = 4
 DEF_NUMBER_OF_KEYS = 7
 
 # DEF_MAP_DIM == 2k + 1
-DEF_MAP_DIM = 21
+DEF_MAP_DIM = 11
 
 DEF_LOBE_MAP = [[1,1,1,1,1,1,1],
                 [1,0,0,0,0,0,1],
