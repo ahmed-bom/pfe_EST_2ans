@@ -114,11 +114,9 @@ class Game {
     spec.style.display = "block"
     console.log("spectate")
     for (let p in this.players) {
-      console.log(p)
-      if(this.player_name_render = p)continue;
+      if(this.player_name_render == p)continue;
       if (this.players[p].type == "prey") {
         this.player_name_render = p;
-        console.log(this.player_name_render )
         return 0;
       }
     }
@@ -350,56 +348,6 @@ class Game {
     }
   }
 
-  draw_wal(side, wallX, Distance, x, door) {
-    // Calculate wall height
-    const wallHeight = (this.cv.height * 0.5) / Distance;
-    const wallTop = (this.cv.height - wallHeight) / 2;
-    const wallBottom = (this.cv.height + wallHeight) / 2;
-
-    const wallTexture =
-      side === 0 ? this.Textures.walls[0] : this.Textures.walls[1];
-
-    if (wallTexture.complete) {
-      const textureX = Math.floor(wallX * wallTexture.width);
-
-      this.ctx.drawImage(
-        wallTexture,
-        textureX,
-        0,
-        1,
-        wallTexture.height,
-        x,
-        wallTop,
-        1,
-        wallBottom - wallTop
-      );
-    } else {
-      this.ctx.fillStyle = side == 0 ? "#444444" : "#8d8d8d";
-      this.ctx.fillRect(x, wallTop, 1, wallBottom - wallTop);
-    }
-
-    if (door) {
-      const doorTexture =
-        this.key_number === 0 ? this.Textures.door[0] : this.Textures.door[1];
-      const textureX = Math.floor(wallX * doorTexture.width);
-      if (doorTexture.complete) {
-        this.ctx.drawImage(
-          doorTexture,
-          textureX,
-          0,
-          1,
-          doorTexture.height,
-          x,
-          wallTop,
-          1,
-          wallBottom - wallTop
-        );
-      } else {
-        this.ctx.fillStyle = "#3a2a1a";
-        this.ctx.fillRect(x, wallTop, 1, wallBottom - wallTop);
-      }
-    }
-  }
 
   draw_keys(wallDistances) {
     const player = this.players[this.player_name_render];
@@ -565,16 +513,101 @@ class Game {
     }
   });
 }
+draw_wal(side, wallX, Distance, x, door) {
+  // Calculate wall height
+  const wallHeight = (this.cv.height * 0.5) / Distance;
+  const wallTop = (this.cv.height - wallHeight) / 2;
+  const wallBottom = (this.cv.height + wallHeight) / 2;
+
+  const centerX = this.cv.width / 2;
+  const lightRadius = this.cv.width * 0.12;
+
+
+    
+  // Calculate base brightness from side and distance
+  let brightness = side === 1 ? 0.7 : 1;
+  brightness = brightness / (1 + Distance * 0.1);
+        
+  // Get the light spot intensity for this column
+  const lightIntensity = this.createWallLightSpot(x, centerX, lightRadius);
+  
+        // Add the light spot on top of the regular brightness
+        //const spotBrightness = Math.min(brightness + lightIntensity * 0.6, 1.0);
+        
+        //this.ctx.globalAlpha = spotBrightness;
+        
+
+
+
+
+
+
+  const wallTexture =
+    side === 0 ? this.Textures.walls[0] : this.Textures.walls[1];
+
+  if (wallTexture.complete) {
+    const textureX = Math.floor(wallX * wallTexture.width);
+
+    this.ctx.drawImage(
+      wallTexture,
+      textureX,
+      0,
+      1,
+      wallTexture.height,
+      x,
+      wallTop,
+      1,
+      wallHeight
+    );
+  } else {
+    this.ctx.fillStyle = side == 0 ? "#444444" : "#8d8d8d";
+    this.ctx.fillRect(x, wallTop, 1, wallHeight);
+  }
+
+  if (door) {
+    const doorTexture =
+      this.key_number === 0 ? this.Textures.door[0] : this.Textures.door[1];
+    const textureX = Math.floor(wallX * doorTexture.width);
+    if (doorTexture.complete) {
+      this.ctx.drawImage(
+        doorTexture,
+        textureX,
+        0,
+        1,
+        doorTexture.height,
+        x,
+        wallTop,
+        1,
+        wallHeight
+      );
+    } else {
+      this.ctx.fillStyle = "#3a2a1a";
+      this.ctx.fillRect(x, wallTop, 1, wallHeight);
+    }
+  }
+
+
+  if (lightIntensity > 0.05) {
+    const gradientAlpha = lightIntensity * 0.35;
+    this.ctx.fillStyle = `rgba(255, 255, 230, ${gradientAlpha})`;
+    this.ctx.fillRect(x, wallTop, 1, wallHeight);
+    // Subtle highlight in the center
+    if (lightIntensity > 0.8) {
+      this.ctx.fillStyle = `rgba(255, 255, 255, ${(lightIntensity - 0.8) * 0.5})`;
+      this.ctx.fillRect(x, wallTop, 1, wallHeight);
+    }
+  }
+}
   render() {
     const RAYS = this.cv.width;
     const FOV = this.player_view_angle;
     const playerAngle = this.players[this.player_name_render].angle;
+    const player_type = this.players[this.player_name_render].type
     const wallDistances = new Array(RAYS).fill(Infinity);
   
     this.draw_background(playerAngle);
   
-    const centerX = this.cv.width / 2;
-    const lightRadius = this.cv.width * 0.12;
+
   
     for (let x = 0; x < RAYS; x++) {
       const rayAngle = playerAngle + (x / RAYS - 0.5) * FOV;
@@ -584,45 +617,15 @@ class Game {
       const correctDistance = ray.distance * Math.cos(rayAngle - playerAngle);
       wallDistances[x] = correctDistance;
   
-      // Draw wall slice with torch light effect
-      const wallHeight = (this.cv.height * 0.5) / correctDistance;
-      const wallTop = (this.cv.height - wallHeight) / 2;
-      const wallBottom = (this.cv.height + wallHeight) / 2;
-  
-      // Calculate base brightness from side and distance
-      let brightness = ray.side === 1 ? 0.7 : 1;
-      brightness = brightness / (1 + correctDistance * 0.1);
-      
-      // Get the light spot intensity for this column
-      const lightIntensity = this.createWallLightSpot(x, centerX, lightRadius);
-      
-      // Add the light spot on top of the regular brightness
-      const spotBrightness = Math.min(brightness + lightIntensity * 0.6, 1.0);
-      
-      this.ctx.globalAlpha = spotBrightness;
-      
-      // Draw wall slice (your existing draw_wal method)
       this.draw_wal(ray.side, ray.wallX, correctDistance, x, ray.door);
-      
-      this.ctx.globalAlpha = 1;
   
-      if (lightIntensity > 0.05) {
-        const gradientAlpha = lightIntensity * 0.35;
-        this.ctx.fillStyle = `rgba(255, 255, 230, ${gradientAlpha})`;
-        this.ctx.fillRect(x, wallTop, 1, wallBottom - wallTop);
-        
-        // Subtle highlight in the center
-        if (lightIntensity > 0.8) {
-          this.ctx.fillStyle = `rgba(255, 255, 255, ${(lightIntensity - 0.8) * 0.5})`;
-          this.ctx.fillRect(x, wallTop, 1, wallBottom - wallTop);
-        }
-      }
     }
   
     this.draw_keys(wallDistances);
     this.draw_Players(wallDistances);
     
-    if (this.players[this.player_name_render].type == "prey") {
+    
+    if ( player_type == "prey" || player_type == "NULL") {
       const handWidth = this.cv.width * 0.6;
       const handHeight = handWidth * (hand_img.height / hand_img.width);
       const handX = this.cv.width - handWidth;
@@ -631,7 +634,6 @@ class Game {
       this.ctx.drawImage(hand_img, handX, handY, handWidth, handHeight);
     }
   
-    this.droit();
     setTimeout(() => {
       this.render();
     }, this.FPS);
