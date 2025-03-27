@@ -88,7 +88,7 @@ get_key_audio.src = origin + "/static/audio/key.mp3";
 let key_number_of_game = 0
 
 let MOUSE_CONTROLS = true;
-const MOUSE_SENSITIVITY = 10;
+const MOUSE_SENSITIVITY = 5;
 let old_movementX = 0;
 
 let AUDIO_ON = false
