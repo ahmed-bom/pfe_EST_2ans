@@ -16,8 +16,8 @@ class Player:
         self.y = 1.5
         self.angle = 0
         
-        self.rotation_speed = 3.14/32
-        self.mov_speed = 0.2
+        self.rotation_speed = 3/32
+        self.mov_speed = 0.15
 
 
 
