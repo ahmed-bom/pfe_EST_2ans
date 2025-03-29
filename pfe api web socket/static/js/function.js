@@ -100,7 +100,7 @@ function listener(data) {
       break;
 
     case "player_rede":
-      get_message_from_server(data.from + " ready");
+      get_message_from_server(data.from + " is ready");
       break;
 
     case "player_not_rede":
